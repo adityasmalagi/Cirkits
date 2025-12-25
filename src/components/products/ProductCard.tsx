@@ -45,7 +45,7 @@ export function ProductCard({ product, quantity = 1, notes }: ProductCardProps) 
             </div>
           )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="font-semibold text-primary">
               ₹{product.price?.toLocaleString('en-IN')}
               {quantity > 1 && (
@@ -55,10 +55,10 @@ export function ProductCard({ product, quantity = 1, notes }: ProductCardProps) 
               )}
             </span>
             {product.affiliate_url && (
-              <Button size="sm" variant="outline" className="gap-1" asChild>
+              <Button size="sm" className="gap-1 gradient-primary text-primary-foreground" asChild>
                 <a href={product.affiliate_url} target="_blank" rel="noopener noreferrer">
                   <ShoppingCart className="h-3 w-3" />
-                  Buy
+                  Buy on Amazon
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>
