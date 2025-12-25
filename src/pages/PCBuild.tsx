@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   Cpu, 
   HardDrive, 
@@ -12,13 +13,15 @@ import {
   Zap, 
   Box, 
   Fan, 
-  Keyboard, 
-  Mouse, 
   ExternalLink,
   ShoppingCart,
   IndianRupee,
   Check,
-  Plus
+  AlertTriangle,
+  Gamepad2,
+  Briefcase,
+  Wallet,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +35,20 @@ interface PCComponent {
   amazonUrl: string;
   imageUrl?: string;
   recommended?: boolean;
+  socket?: string;
+  ramType?: string;
+  chipset?: string;
+}
+
+type BudgetTier = 'all' | 'budget' | 'midrange' | 'highend';
+
+interface PresetBuild {
+  id: string;
+  name: string;
+  description: string;
+  icon: typeof Gamepad2;
+  components: Record<string, string>;
+  totalPrice: number;
 }
 
 const pcComponents: PCComponent[] = [
@@ -45,6 +62,7 @@ const pcComponents: PCComponent[] = [
     specs: ['6 Cores / 12 Threads', '3.7 GHz Base / 4.6 GHz Boost', '65W TDP', 'PCIe 4.0'],
     amazonUrl: 'https://www.amazon.in/s?k=AMD+Ryzen+5+5600X',
     recommended: true,
+    socket: 'AM4',
   },
   {
     id: 'cpu-2',
@@ -54,6 +72,7 @@ const pcComponents: PCComponent[] = [
     price: 13499,
     specs: ['6 Cores / 12 Threads', '2.5 GHz Base / 4.4 GHz Boost', '65W TDP', 'LGA 1700'],
     amazonUrl: 'https://www.amazon.in/s?k=Intel+Core+i5-12400F',
+    socket: 'LGA1700',
   },
   {
     id: 'cpu-3',
@@ -63,6 +82,7 @@ const pcComponents: PCComponent[] = [
     price: 22999,
     specs: ['8 Cores / 16 Threads', '3.8 GHz Base / 4.7 GHz Boost', '105W TDP', 'PCIe 4.0'],
     amazonUrl: 'https://www.amazon.in/s?k=AMD+Ryzen+7+5800X',
+    socket: 'AM4',
   },
   {
     id: 'cpu-4',
@@ -72,6 +92,7 @@ const pcComponents: PCComponent[] = [
     price: 38999,
     specs: ['16 Cores / 24 Threads', '3.4 GHz Base / 5.4 GHz Boost', '125W TDP', 'LGA 1700'],
     amazonUrl: 'https://www.amazon.in/s?k=Intel+Core+i7-13700K',
+    socket: 'LGA1700',
   },
   {
     id: 'cpu-5',
@@ -81,6 +102,7 @@ const pcComponents: PCComponent[] = [
     price: 42999,
     specs: ['12 Cores / 24 Threads', '4.7 GHz Base / 5.6 GHz Boost', '170W TDP', 'AM5 Socket'],
     amazonUrl: 'https://www.amazon.in/s?k=AMD+Ryzen+9+7900X',
+    socket: 'AM5',
   },
   {
     id: 'cpu-6',
@@ -90,6 +112,7 @@ const pcComponents: PCComponent[] = [
     price: 58999,
     specs: ['24 Cores / 32 Threads', '3.2 GHz Base / 6.0 GHz Boost', '125W TDP', 'LGA 1700'],
     amazonUrl: 'https://www.amazon.in/s?k=Intel+Core+i9-14900K',
+    socket: 'LGA1700',
   },
   // Graphics Cards
   {
@@ -166,6 +189,7 @@ const pcComponents: PCComponent[] = [
     specs: ['16GB (2x8GB)', 'DDR4 3200MHz', 'CL16', 'XMP 2.0'],
     amazonUrl: 'https://www.amazon.in/s?k=Corsair+Vengeance+LPX+16GB+DDR4',
     recommended: true,
+    ramType: 'DDR4',
   },
   {
     id: 'ram-2',
@@ -175,6 +199,7 @@ const pcComponents: PCComponent[] = [
     price: 7999,
     specs: ['32GB (2x16GB)', 'DDR4 3600MHz', 'CL18', 'RGB Lighting'],
     amazonUrl: 'https://www.amazon.in/s?k=G.Skill+Trident+Z+RGB+32GB',
+    ramType: 'DDR4',
   },
   {
     id: 'ram-3',
@@ -184,6 +209,7 @@ const pcComponents: PCComponent[] = [
     price: 8999,
     specs: ['32GB (2x16GB)', 'DDR5 5600MHz', 'CL40', 'XMP 3.0'],
     amazonUrl: 'https://www.amazon.in/s?k=Kingston+Fury+Beast+DDR5+32GB',
+    ramType: 'DDR5',
   },
   {
     id: 'ram-4',
@@ -193,6 +219,7 @@ const pcComponents: PCComponent[] = [
     price: 18999,
     specs: ['64GB (2x32GB)', 'DDR5 6000MHz', 'CL36', 'RGB Lighting'],
     amazonUrl: 'https://www.amazon.in/s?k=Corsair+Dominator+Platinum+64GB+DDR5',
+    ramType: 'DDR5',
   },
   {
     id: 'ram-5',
@@ -202,6 +229,7 @@ const pcComponents: PCComponent[] = [
     price: 2999,
     specs: ['16GB (2x8GB)', 'DDR4 3000MHz', 'CL15', 'Budget Friendly'],
     amazonUrl: 'https://www.amazon.in/s?k=Crucial+Ballistix+16GB+DDR4',
+    ramType: 'DDR4',
   },
   // Storage
   {
@@ -269,6 +297,9 @@ const pcComponents: PCComponent[] = [
     specs: ['AMD B550', 'ATX', 'PCIe 4.0', 'DDR4 4400MHz'],
     amazonUrl: 'https://www.amazon.in/s?k=MSI+B550-A+PRO',
     recommended: true,
+    socket: 'AM4',
+    ramType: 'DDR4',
+    chipset: 'B550',
   },
   {
     id: 'mobo-2',
@@ -278,6 +309,9 @@ const pcComponents: PCComponent[] = [
     price: 15999,
     specs: ['Intel B660', 'ATX', 'PCIe 5.0', 'DDR5 Support'],
     amazonUrl: 'https://www.amazon.in/s?k=ASUS+ROG+Strix+B660-A',
+    socket: 'LGA1700',
+    ramType: 'DDR5',
+    chipset: 'B660',
   },
   {
     id: 'mobo-3',
@@ -287,6 +321,9 @@ const pcComponents: PCComponent[] = [
     price: 18999,
     specs: ['AMD B650', 'ATX', 'PCIe 5.0', 'DDR5 Support', 'WiFi 6E'],
     amazonUrl: 'https://www.amazon.in/s?k=Gigabyte+B650+AORUS+Elite+AX',
+    socket: 'AM5',
+    ramType: 'DDR5',
+    chipset: 'B650',
   },
   {
     id: 'mobo-4',
@@ -296,6 +333,9 @@ const pcComponents: PCComponent[] = [
     price: 54999,
     specs: ['Intel Z790', 'ATX', 'PCIe 5.0', 'DDR5 7800MHz', 'WiFi 6E'],
     amazonUrl: 'https://www.amazon.in/s?k=ASUS+ROG+Maximus+Z790+Hero',
+    socket: 'LGA1700',
+    ramType: 'DDR5',
+    chipset: 'Z790',
   },
   {
     id: 'mobo-5',
@@ -305,6 +345,9 @@ const pcComponents: PCComponent[] = [
     price: 17999,
     specs: ['Intel B760', 'ATX', 'PCIe 5.0', 'DDR5 Support', '2.5G LAN'],
     amazonUrl: 'https://www.amazon.in/s?k=MSI+MAG+B760+Tomahawk',
+    socket: 'LGA1700',
+    ramType: 'DDR5',
+    chipset: 'B760',
   },
   {
     id: 'mobo-6',
@@ -314,6 +357,9 @@ const pcComponents: PCComponent[] = [
     price: 7499,
     specs: ['AMD B450', 'Micro-ATX', 'PCIe 3.0', 'DDR4 3533MHz'],
     amazonUrl: 'https://www.amazon.in/s?k=ASRock+B450M+Steel+Legend',
+    socket: 'AM4',
+    ramType: 'DDR4',
+    chipset: 'B450',
   },
   // Power Supply
   {
@@ -496,8 +542,70 @@ const categories = [
   { id: 'cooling', name: 'Cooling', icon: Fan },
 ];
 
+const budgetTiers = [
+  { id: 'all' as BudgetTier, name: 'All', range: '₹0 - ∞' },
+  { id: 'budget' as BudgetTier, name: 'Budget', range: '₹0 - ₹10K' },
+  { id: 'midrange' as BudgetTier, name: 'Mid-Range', range: '₹10K - ₹50K' },
+  { id: 'highend' as BudgetTier, name: 'High-End', range: '₹50K+' },
+];
+
+const presetBuilds: PresetBuild[] = [
+  {
+    id: 'budget',
+    name: 'Budget Build',
+    description: 'Entry-level gaming & productivity',
+    icon: Wallet,
+    components: {
+      processor: 'cpu-2',
+      graphics: 'gpu-2',
+      memory: 'ram-5',
+      storage: 'storage-2',
+      motherboard: 'mobo-6',
+      psu: 'psu-6',
+      case: 'case-1',
+      cooling: 'cooler-1',
+    },
+    totalPrice: 62491,
+  },
+  {
+    id: 'gaming',
+    name: 'Gaming PC',
+    description: 'High FPS 1440p gaming experience',
+    icon: Gamepad2,
+    components: {
+      processor: 'cpu-1',
+      graphics: 'gpu-3',
+      memory: 'ram-1',
+      storage: 'storage-1',
+      motherboard: 'mobo-1',
+      psu: 'psu-1',
+      case: 'case-2',
+      cooling: 'cooler-2',
+    },
+    totalPrice: 116490,
+  },
+  {
+    id: 'workstation',
+    name: 'Workstation',
+    description: 'Content creation & heavy workloads',
+    icon: Briefcase,
+    components: {
+      processor: 'cpu-4',
+      graphics: 'gpu-4',
+      memory: 'ram-3',
+      storage: 'storage-4',
+      motherboard: 'mobo-5',
+      psu: 'psu-3',
+      case: 'case-3',
+      cooling: 'cooler-3',
+    },
+    totalPrice: 215891,
+  },
+];
+
 export default function PCBuild() {
   const [selectedComponents, setSelectedComponents] = useState<Record<string, PCComponent>>({});
+  const [budgetTier, setBudgetTier] = useState<BudgetTier>('all');
 
   const toggleComponent = (component: PCComponent) => {
     setSelectedComponents(prev => {
@@ -510,26 +618,146 @@ export default function PCBuild() {
     });
   };
 
+  const applyPreset = (preset: PresetBuild) => {
+    const newSelection: Record<string, PCComponent> = {};
+    Object.entries(preset.components).forEach(([category, componentId]) => {
+      const component = pcComponents.find(c => c.id === componentId);
+      if (component) {
+        newSelection[category] = component;
+      }
+    });
+    setSelectedComponents(newSelection);
+  };
+
+  const filteredComponents = useMemo(() => {
+    return pcComponents.filter(component => {
+      if (budgetTier === 'all') return true;
+      if (budgetTier === 'budget') return component.price <= 10000;
+      if (budgetTier === 'midrange') return component.price > 10000 && component.price <= 50000;
+      if (budgetTier === 'highend') return component.price > 50000;
+      return true;
+    });
+  }, [budgetTier]);
+
+  const compatibilityWarnings = useMemo(() => {
+    const warnings: string[] = [];
+    const cpu = selectedComponents.processor;
+    const mobo = selectedComponents.motherboard;
+    const ram = selectedComponents.memory;
+
+    // Check CPU and Motherboard socket compatibility
+    if (cpu && mobo) {
+      if (cpu.socket !== mobo.socket) {
+        warnings.push(`CPU socket (${cpu.socket}) doesn't match motherboard socket (${mobo.socket}). The ${cpu.name} requires a ${cpu.socket} motherboard.`);
+      }
+    }
+
+    // Check RAM and Motherboard type compatibility
+    if (ram && mobo) {
+      if (ram.ramType !== mobo.ramType) {
+        warnings.push(`RAM type (${ram.ramType}) is incompatible with motherboard (supports ${mobo.ramType}). Please select matching RAM type.`);
+      }
+    }
+
+    // Check CPU and RAM type for AM5 (requires DDR5)
+    if (cpu && ram) {
+      if (cpu.socket === 'AM5' && ram.ramType === 'DDR4') {
+        warnings.push(`AMD AM5 platform (${cpu.name}) requires DDR5 RAM. Selected RAM is DDR4.`);
+      }
+    }
+
+    return warnings;
+  }, [selectedComponents]);
+
   const totalPrice = Object.values(selectedComponents).reduce((sum, c) => sum + c.price, 0);
   const selectedCount = Object.keys(selectedComponents).length;
 
   return (
     <Layout>
       <div className="container py-8">
+        {/* Header & Preset Builds */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">PC Build Configurator</h1>
+          <p className="text-muted-foreground mb-6">
+            Select components to build your dream PC. All prices in Indian Rupees with direct Amazon links.
+          </p>
+
+          {/* Preset Builds */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Quick Start Presets
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {presetBuilds.map((preset) => (
+                <Card 
+                  key={preset.id} 
+                  className="cursor-pointer hover:shadow-lg transition-all hover:border-primary/50"
+                  onClick={() => applyPreset(preset)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center">
+                        <preset.icon className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{preset.name}</h3>
+                        <p className="text-xs text-muted-foreground">{preset.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-lg font-bold text-primary">
+                        ₹{preset.totalPrice.toLocaleString('en-IN')}
+                      </span>
+                      <Button size="sm" variant="outline">Apply</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Budget Filter */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="text-sm font-medium text-muted-foreground">Budget Filter:</span>
+            {budgetTiers.map((tier) => (
+              <Button
+                key={tier.id}
+                variant={budgetTier === tier.id ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setBudgetTier(tier.id)}
+                className={cn(
+                  budgetTier === tier.id && 'gradient-primary text-primary-foreground'
+                )}
+              >
+                {tier.name}
+                <span className="ml-1 text-xs opacity-75">({tier.range})</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Compatibility Warnings */}
+        {compatibilityWarnings.length > 0 && (
+          <div className="mb-6 space-y-2">
+            {compatibilityWarnings.map((warning, index) => (
+              <Alert key={index} variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Compatibility Warning</AlertTitle>
+                <AlertDescription>{warning}</AlertDescription>
+              </Alert>
+            ))}
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
           <div className="flex-1">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">PC Build Configurator</h1>
-              <p className="text-muted-foreground">
-                Select components to build your dream PC. All prices in Indian Rupees with direct Amazon links.
-              </p>
-            </div>
-
             <Tabs defaultValue="processor" className="space-y-6">
               <TabsList className="flex flex-wrap h-auto gap-2 bg-transparent p-0">
                 {categories.map((cat) => {
                   const isSelected = !!selectedComponents[cat.id];
+                  const categoryComponents = filteredComponents.filter(c => c.category === cat.id);
                   return (
                     <TabsTrigger
                       key={cat.id}
@@ -542,6 +770,9 @@ export default function PCBuild() {
                       <cat.icon className="h-4 w-4" />
                       {cat.name}
                       {isSelected && <Check className="h-3 w-3 text-green-500" />}
+                      <Badge variant="secondary" className="ml-1 text-xs">
+                        {categoryComponents.length}
+                      </Badge>
                     </TabsTrigger>
                   );
                 })}
@@ -550,7 +781,7 @@ export default function PCBuild() {
               {categories.map((cat) => (
                 <TabsContent key={cat.id} value={cat.id} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {pcComponents
+                    {filteredComponents
                       .filter((c) => c.category === cat.id)
                       .map((component) => {
                         const isSelected = selectedComponents[cat.id]?.id === component.id;
@@ -570,6 +801,12 @@ export default function PCBuild() {
                                     <Badge variant="secondary">{component.brand}</Badge>
                                     {component.recommended && (
                                       <Badge className="gradient-primary border-0 text-xs">Recommended</Badge>
+                                    )}
+                                    {component.socket && (
+                                      <Badge variant="outline" className="text-xs">{component.socket}</Badge>
+                                    )}
+                                    {component.ramType && (
+                                      <Badge variant="outline" className="text-xs">{component.ramType}</Badge>
                                     )}
                                   </div>
                                   <h3 className="font-semibold">{component.name}</h3>
@@ -612,6 +849,11 @@ export default function PCBuild() {
                           </Card>
                         );
                       })}
+                    {filteredComponents.filter(c => c.category === cat.id).length === 0 && (
+                      <div className="col-span-2 text-center py-8 text-muted-foreground">
+                        No components available in this budget range. Try a different filter.
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
               ))}
@@ -630,7 +872,7 @@ export default function PCBuild() {
               <CardContent className="space-y-4">
                 {selectedCount === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    Select components to start building your PC
+                    Select components or choose a preset to start building your PC
                   </p>
                 ) : (
                   <>
@@ -660,6 +902,16 @@ export default function PCBuild() {
                       })}
                     </div>
 
+                    {compatibilityWarnings.length > 0 && (
+                      <>
+                        <Separator />
+                        <div className="flex items-center gap-2 text-destructive text-sm">
+                          <AlertTriangle className="h-4 w-4" />
+                          <span>{compatibilityWarnings.length} compatibility issue(s)</span>
+                        </div>
+                      </>
+                    )}
+
                     <Separator />
 
                     <div className="flex justify-between items-center font-bold text-lg">
@@ -671,9 +923,23 @@ export default function PCBuild() {
                     </div>
 
                     <div className="space-y-2">
-                      <Button className="w-full gradient-primary text-primary-foreground gap-2">
+                      <Button 
+                        className="w-full gradient-primary text-primary-foreground gap-2"
+                        onClick={() => {
+                          Object.values(selectedComponents).forEach(component => {
+                            window.open(component.amazonUrl, '_blank');
+                          });
+                        }}
+                      >
                         <ShoppingCart className="h-4 w-4" />
                         Buy All on Amazon
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setSelectedComponents({})}
+                      >
+                        Clear Build
                       </Button>
                       <p className="text-xs text-muted-foreground text-center">
                         Opens each component in a new tab
@@ -686,7 +952,7 @@ export default function PCBuild() {
 
                 <div className="text-xs text-muted-foreground space-y-1">
                   <p>* Prices are approximate and may vary</p>
-                  <p>* Check compatibility before purchasing</p>
+                  <p>* Check compatibility warnings above</p>
                 </div>
               </CardContent>
             </Card>
