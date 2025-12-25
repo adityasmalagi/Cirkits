@@ -130,8 +130,8 @@ export default function ProjectDetail() {
   if (isLoading) {
     return (
       <Layout>
-        <div className="container py-8">
-          <Skeleton className="h-96 w-full" />
+        <div className="container py-4 md:py-8 px-4">
+          <Skeleton className="h-64 md:h-96 w-full" />
         </div>
       </Layout>
     );
@@ -140,7 +140,7 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <Layout>
-        <div className="container py-8 text-center">
+        <div className="container py-8 px-4 text-center">
           <h1 className="text-2xl font-bold">Project not found</h1>
           <Link to="/projects">
             <Button className="mt-4">Back to Projects</Button>
@@ -152,18 +152,47 @@ export default function ProjectDetail() {
 
   return (
     <Layout>
-      <div className="container py-8">
+      <div className="container py-4 md:py-8 px-4">
         {/* Back button */}
         <Link to="/projects">
-          <Button variant="ghost" className="mb-6 gap-2">
+          <Button variant="ghost" className="mb-4 md:mb-6 gap-2 h-10">
             <ArrowLeft className="h-4 w-4" />
             Back to Projects
           </Button>
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+          {/* Mobile Price Summary - Show at top on mobile */}
+          <div className="lg:hidden">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <ShoppingCart className="h-5 w-5" />
+                  Price Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {parts && parts.length > 0 ? (
+                  <>
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Total ({parts.length} items)</span>
+                      <span className="text-primary">₹{totalCost.toLocaleString('en-IN')}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      * Prices are estimates and may vary
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    No components listed yet.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             {/* Hero Image */}
             <div className="relative aspect-video rounded-xl overflow-hidden">
               <img
@@ -174,7 +203,7 @@ export default function ProjectDetail() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background"
+                className="absolute top-3 right-3 md:top-4 md:right-4 bg-background/80 backdrop-blur-sm hover:bg-background h-10 w-10"
                 onClick={toggleFavorite}
               >
                 <Heart className={cn('h-5 w-5', isFavorite && 'fill-destructive text-destructive')} />
@@ -182,7 +211,7 @@ export default function ProjectDetail() {
             </div>
 
             {/* Project Info */}
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               <div className="flex items-center gap-2 flex-wrap">
                 {project.category && (
                   <Badge variant="secondary">{project.category.name}</Badge>
@@ -195,36 +224,24 @@ export default function ProjectDetail() {
                 )}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold">{project.title}</h1>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">{project.title}</h1>
               
-              <p className="text-muted-foreground text-lg">{project.description}</p>
+              <p className="text-muted-foreground text-base md:text-lg">{project.description}</p>
 
-              <div className="flex items-center gap-6 text-muted-foreground">
+              <div className="flex items-center gap-4 md:gap-6 text-sm md:text-base text-muted-foreground">
                 {project.estimated_cost && (
-                  <div className="flex items-center gap-2">
-                    <IndianRupee className="h-5 w-5" />
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <IndianRupee className="h-4 w-4 md:h-5 md:w-5" />
                     <span>Est. ₹{project.estimated_cost?.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 {project.estimated_time && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <Clock className="h-4 w-4 md:h-5 md:w-5" />
                     <span>{project.estimated_time}</span>
                   </div>
                 )}
               </div>
-
-              {/* Build This Button */}
-              {parts && parts.length > 0 && (
-                <Button 
-                  size="lg" 
-                  className="gradient-primary text-primary-foreground gap-2"
-                  onClick={handleBuildThis}
-                >
-                  <Wrench className="h-5 w-5" />
-                  Build This Project - Add All to Cart
-                </Button>
-              )}
             </div>
 
             <Separator />
@@ -242,11 +259,11 @@ export default function ProjectDetail() {
 
             {/* Parts List */}
             <div>
-              <h2 className="text-2xl font-bold mb-4">Parts List</h2>
-              <div className="space-y-4">
+              <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Parts List</h2>
+              <div className="space-y-3 md:space-y-4">
                 {partsLoading ? (
                   Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-32" />
+                    <Skeleton key={i} className="h-24 md:h-32" />
                   ))
                 ) : parts?.length === 0 ? (
                   <p className="text-muted-foreground">No parts listed for this project yet.</p>
@@ -264,8 +281,8 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar - Desktop only */}
+          <div className="hidden lg:block space-y-6">
             {/* Price Summary */}
             <Card className="sticky top-24">
               <CardHeader>
@@ -317,6 +334,19 @@ export default function ProjectDetail() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Bottom Bar */}
+      {parts && parts.length > 0 && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border p-4 pb-safe">
+          <Button 
+            className="w-full h-12 gradient-primary text-primary-foreground gap-2 text-base"
+            onClick={handleBuildThis}
+          >
+            <Wrench className="h-5 w-5" />
+            Build This - ₹{totalCost.toLocaleString('en-IN')}
+          </Button>
+        </div>
+      )}
     </Layout>
   );
 }
