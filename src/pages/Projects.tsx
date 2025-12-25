@@ -51,7 +51,7 @@ export default function Projects() {
     queryFn: async () => {
       let query = supabase
         .from('projects')
-        .select('*, category:categories(*)');
+        .select('*, category:categories(*), project_parts(*, product:products(*))');
 
       if (categoryFilter) {
         const category = categories?.find(c => c.slug === categoryFilter);
@@ -70,7 +70,7 @@ export default function Projects() {
 
       const { data, error } = await query.order('featured', { ascending: false }).order('created_at', { ascending: false });
       if (error) throw error;
-      return data as (Project & { category: Category })[];
+      return data as (Project & { category: Category; project_parts: any[] })[];
     },
     enabled: !!categories,
   });
