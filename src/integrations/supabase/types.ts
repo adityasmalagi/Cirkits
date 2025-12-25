@@ -338,6 +338,100 @@ export type Database = {
           },
         ]
       }
+      user_project_parts: {
+        Row: {
+          affiliate_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number | null
+          quantity: number | null
+          user_project_id: string
+        }
+        Insert: {
+          affiliate_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price?: number | null
+          quantity?: number | null
+          user_project_id: string
+        }
+        Update: {
+          affiliate_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number | null
+          quantity?: number | null
+          user_project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_project_parts_user_project_id_fkey"
+            columns: ["user_project_id"]
+            isOneToOne: false
+            referencedRelation: "user_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_projects: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          description: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_level"] | null
+          estimated_cost: number | null
+          estimated_time: string | null
+          id: string
+          image_url: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null
+          estimated_cost?: number | null
+          estimated_time?: string | null
+          id?: string
+          image_url?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null
+          estimated_cost?: number | null
+          estimated_time?: string | null
+          id?: string
+          image_url?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_projects_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
