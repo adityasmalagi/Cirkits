@@ -121,9 +121,9 @@ export default function AISuggest() {
             <Sparkles className="h-4 w-4" />
             AI-Powered Recommendations
           </div>
-          <h1 className="text-3xl font-bold mb-2">TechHub AI Assistant</h1>
+          <h1 className="text-3xl font-bold mb-2">Cirkit AI Assistant</h1>
           <p className="text-muted-foreground">
-            Describe your project idea and I'll recommend the perfect hardware and components
+            Describe your project idea and I'll recommend the perfect hardware and components for your build
           </p>
         </div>
 
@@ -140,10 +140,10 @@ export default function AISuggest() {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
                   {[
-                    "I want to build a gaming PC for $1500",
-                    "Suggest an Arduino home automation project",
-                    "Best laptop for programming and video editing",
-                    "Help me build an AI security camera",
+                    "I want to build a smart home automation system for ₹10,000",
+                    "Suggest an Arduino plant watering project for beginners",
+                    "Best laptop for programming under ₹80,000",
+                    "Help me build an AI security camera with Jetson Nano",
                   ].map((suggestion) => (
                     <Button
                       key={suggestion}
