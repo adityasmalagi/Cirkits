@@ -150,106 +150,118 @@ export default function Projects() {
 
   return (
     <Layout>
-      <div className="container py-8">
+      <div className="container py-4 md:py-8 px-3 md:px-6">
         {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Project Catalog</h1>
-            <p className="text-muted-foreground mt-1">
-              Browse our curated collection of hardware projects
-            </p>
-            <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
-              💡 Prices shown are estimates and may vary. Click product links for current Amazon prices.
-            </p>
+        <div className="mb-6 md:mb-8 flex flex-col gap-3 md:gap-4">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl md:text-3xl font-bold">Project Catalog</h1>
+              <p className="text-sm md:text-base text-muted-foreground mt-1">
+                Browse our curated collection of hardware projects
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <SubmitProjectDialog />
+            </div>
           </div>
-          <SubmitProjectDialog />
+          <p className="text-xs text-muted-foreground/70 flex items-center gap-1">
+            💡 Prices are estimates. Click links for current prices.
+          </p>
         </div>
 
-        {/* Budget Filter Buttons */}
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-            <IndianRupee className="h-4 w-4" />
-            Budget:
-          </span>
-          {budgetRanges.map((range) => (
-            <Button
-              key={range.id}
-              variant={budgetFilter === range.id ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setBudgetFilter(range.id)}
-              className={cn(
-                budgetFilter === range.id && 'gradient-primary text-primary-foreground'
-              )}
-            >
-              {range.label}
-            </Button>
-          ))}
+        {/* Budget Filter Buttons - Horizontal scroll on mobile */}
+        <div className="mb-4 md:mb-6">
+          <div className="flex items-center gap-2 mb-2 md:mb-0">
+            <span className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1 flex-shrink-0">
+              <IndianRupee className="h-3 w-3 md:h-4 md:w-4" />
+              Budget:
+            </span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 md:flex-wrap scrollbar-hide">
+            {budgetRanges.map((range) => (
+              <Button
+                key={range.id}
+                variant={budgetFilter === range.id ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setBudgetFilter(range.id)}
+                className={cn(
+                  'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px]',
+                  budgetFilter === range.id && 'gradient-primary text-primary-foreground'
+                )}
+              >
+                <span className="hidden md:inline">{range.label}</span>
+                <span className="md:hidden">{range.range}</span>
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="space-y-3 md:space-y-0 md:flex md:flex-row md:gap-4 mb-6 md:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-10 md:h-9"
             />
           </div>
 
-          <Select
-            value={categoryFilter || 'all'}
-            onValueChange={(value) => {
-              const newParams = new URLSearchParams(searchParams);
-              if (value === 'all') {
-                newParams.delete('category');
-              } else {
-                newParams.set('category', value);
-              }
-              setSearchParams(newParams);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories?.map((cat) => (
-                <SelectItem key={cat.id} value={cat.slug}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-2 md:flex md:gap-4">
+            <Select
+              value={categoryFilter || 'all'}
+              onValueChange={(value) => {
+                const newParams = new URLSearchParams(searchParams);
+                if (value === 'all') {
+                  newParams.delete('category');
+                } else {
+                  newParams.set('category', value);
+                }
+                setSearchParams(newParams);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-40 h-10 md:h-9 text-sm">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories?.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.slug}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Select
-            value={difficultyFilter || 'all'}
-            onValueChange={(value) => {
-              const newParams = new URLSearchParams(searchParams);
-              if (value === 'all') {
-                newParams.delete('difficulty');
-              } else {
-                newParams.set('difficulty', value);
-              }
-              setSearchParams(newParams);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Difficulty" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Levels</SelectItem>
-              <SelectItem value="beginner">Beginner</SelectItem>
-              <SelectItem value="intermediate">Intermediate</SelectItem>
-              <SelectItem value="advanced">Advanced</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select
+              value={difficultyFilter || 'all'}
+              onValueChange={(value) => {
+                const newParams = new URLSearchParams(searchParams);
+                if (value === 'all') {
+                  newParams.delete('difficulty');
+                } else {
+                  newParams.set('difficulty', value);
+                }
+                setSearchParams(newParams);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-36 h-10 md:h-9 text-sm">
+                <SelectValue placeholder="Difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {hasFilters && (
-            <Button variant="ghost" onClick={clearFilters} className="gap-2">
+            <Button variant="ghost" onClick={clearFilters} className="gap-2 h-10 md:h-9 w-full md:w-auto">
               <X className="h-4 w-4" />
-              Clear
+              Clear All
             </Button>
           )}
         </div>
@@ -296,10 +308,10 @@ export default function Projects() {
         )}
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-80" />
+              <Skeleton key={i} className="h-72 md:h-80" />
             ))
           ) : filteredProjects?.length === 0 ? (
             <div className="col-span-full text-center py-12">
