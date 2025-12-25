@@ -12,7 +12,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Monitor, Cpu, Server, Wifi, Brain, Laptop, Sparkles, User, LogOut, Settings, Heart, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
+import { Home } from 'lucide-react';
+
 const navLinks = [
+  { name: 'Home', href: '/', icon: Home },
   { name: 'Projects', href: '/projects', icon: Monitor },
   { name: 'PC Build', href: '/pc-build', icon: Cpu },
   { name: 'AI Suggest', href: '/ai-suggest', icon: Sparkles },
