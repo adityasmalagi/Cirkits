@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart, UserCircle } from 'lucide-react';
+import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart, UserCircle, Folder } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const navLinks = [
@@ -137,8 +137,8 @@ export function Navbar() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/projects" className="flex items-center gap-2 cursor-pointer">
-                      <Monitor className="h-4 w-4" />
+                    <Link to="/my-projects" className="flex items-center gap-2 cursor-pointer">
+                      <Folder className="h-4 w-4" />
                       My Projects
                     </Link>
                   </DropdownMenuItem>
