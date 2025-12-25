@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useShoppingCart } from '@/hooks/useShoppingCart';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationsDropdown } from '@/components/notifications/NotificationsDropdown';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -14,7 +15,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart, UserCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const navLinks = [
   { name: 'Home', href: '/', icon: Home },
@@ -28,6 +29,20 @@ export function Navbar() {
   const { getTotalItems, setIsOpen } = useShoppingCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('id', user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          setDisplayName(data?.display_name || null);
+        });
+    }
+  }, [user]);
 
   const totalItems = getTotalItems();
 
@@ -96,12 +111,11 @@ export function Navbar() {
                   <div className="flex items-center gap-3 p-3 border-b border-border">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="gradient-primary text-primary-foreground">
-                        {user.email?.[0].toUpperCase()}
+                        {(displayName || user.email)?.[0]?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <p className="font-medium text-sm">{user.email?.split('@')[0]}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                      <p className="font-medium text-sm">{displayName || user.email?.split('@')[0]}</p>
                     </div>
                   </div>
                   <DropdownMenuItem asChild>

@@ -5,17 +5,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { User, Mail, Camera, Save, ArrowLeft } from 'lucide-react';
+import { User, Mail, Phone, MapPin, FileText, Save, ArrowLeft } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 
 interface Profile {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
+  phone_number: string | null;
+  bio: string | null;
+  location: string | null;
 }
 
 export default function Profile() {
@@ -23,7 +27,9 @@ export default function Profile() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [displayName, setDisplayName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [bio, setBio] = useState('');
+  const [location, setLocation] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -53,9 +59,11 @@ export default function Profile() {
       }
 
       if (data) {
-        setProfile(data);
+        setProfile(data as Profile);
         setDisplayName(data.display_name || '');
-        setAvatarUrl(data.avatar_url || '');
+        setPhoneNumber(data.phone_number || '');
+        setBio(data.bio || '');
+        setLocation(data.location || '');
       } else {
         // Create profile if it doesn't exist
         const { data: newProfile, error: createError } = await supabase
@@ -84,7 +92,9 @@ export default function Profile() {
         .from('profiles')
         .update({
           display_name: displayName || null,
-          avatar_url: avatarUrl || null,
+          phone_number: phoneNumber || null,
+          bio: bio || null,
+          location: location || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -144,7 +154,6 @@ export default function Profile() {
               {/* Avatar Section */}
               <div className="flex items-center gap-6">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={avatarUrl} alt={displayName || 'User'} />
                   <AvatarFallback className="gradient-primary text-primary-foreground text-2xl">
                     {displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                   </AvatarFallback>
@@ -191,19 +200,43 @@ export default function Profile() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="avatarUrl" className="flex items-center gap-2">
-                    <Camera className="h-4 w-4" />
-                    Avatar URL
+                  <Label htmlFor="phoneNumber" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Mobile Number
                   </Label>
                   <Input
-                    id="avatarUrl"
-                    placeholder="Enter avatar image URL"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
+                    id="phoneNumber"
+                    placeholder="Enter your mobile number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Paste a URL to an image for your profile picture
-                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location" className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Location
+                  </Label>
+                  <Input
+                    id="location"
+                    placeholder="Enter your location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bio" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Bio
+                  </Label>
+                  <Textarea
+                    id="bio"
+                    placeholder="Tell us about yourself..."
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    rows={3}
+                  />
                 </div>
               </div>
 
