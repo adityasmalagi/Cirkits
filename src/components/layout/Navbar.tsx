@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useShoppingCart } from '@/hooks/useShoppingCart';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -74,6 +75,10 @@ export function Navbar() {
               </Badge>
             )}
           </Button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
