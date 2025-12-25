@@ -7358,9 +7358,11 @@ export default function PCBuild() {
 
                 <Separator />
 
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p>* Prices are approximate and may vary</p>
-                  <p>* Check compatibility warnings above</p>
+                <div className="text-xs text-muted-foreground space-y-1 bg-muted/50 p-2 rounded">
+                  <p className="font-medium">💡 Price Disclaimer:</p>
+                  <p>• Prices shown are estimates and may vary</p>
+                  <p>• Click Amazon links for current live prices</p>
+                  <p>• Check compatibility warnings above</p>
                 </div>
               </CardContent>
             </Card>

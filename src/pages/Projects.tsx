@@ -156,6 +156,9 @@ export default function Projects() {
           <p className="text-muted-foreground mt-1">
             Browse our curated collection of hardware projects
           </p>
+          <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
+            💡 Prices shown are estimates and may vary. Click product links for current Amazon prices.
+          </p>
         </div>
 
         {/* Budget Filter Buttons */}
