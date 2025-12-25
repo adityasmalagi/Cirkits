@@ -52,9 +52,9 @@ export function NotificationsDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 bg-popover border border-border" align="end">
+      <DropdownMenuContent className="w-80 bg-popover text-popover-foreground border border-border" align="end">
         <div className="flex items-center justify-between p-3 border-b border-border">
-          <h4 className="font-semibold">Notifications</h4>
+          <h4 className="font-semibold text-foreground">Notifications</h4>
           {unreadCount > 0 && (
             <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
           )}
@@ -64,7 +64,7 @@ export function NotificationsDropdown() {
             mockNotifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${
+                className={`flex flex-col items-start gap-1 p-3 cursor-pointer focus:bg-accent focus:text-accent-foreground ${
                   !notification.read ? 'bg-primary/5' : ''
                 }`}
               >
@@ -73,7 +73,7 @@ export function NotificationsDropdown() {
                     <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
                   )}
                   <div className={!notification.read ? '' : 'ml-4'}>
-                    <p className="font-medium text-sm">{notification.title}</p>
+                    <p className="font-medium text-sm text-foreground">{notification.title}</p>
                     <p className="text-xs text-muted-foreground">{notification.message}</p>
                     <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
                   </div>
@@ -88,7 +88,7 @@ export function NotificationsDropdown() {
         </ScrollArea>
         <DropdownMenuSeparator />
         <div className="p-2">
-          <Button variant="ghost" className="w-full text-sm" size="sm">
+          <Button variant="ghost" className="w-full text-sm text-foreground hover:text-foreground" size="sm">
             Mark all as read
           </Button>
         </div>

@@ -7,11 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { User, Mail, Phone, MapPin, FileText, Save, ArrowLeft } from 'lucide-react';
+import { User, Mail, Phone, MapPin, FileText, Save, ArrowLeft, Edit, Trash2, FolderOpen } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
 
 interface Profile {
   id: string;
@@ -22,16 +26,57 @@ interface Profile {
   location: string | null;
 }
 
+interface UserProject {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string | null;
+  difficulty: string | null;
+  estimated_cost: number | null;
+  image_url: string | null;
+  created_at: string;
+}
+
 export default function Profile() {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Edit project state
+  const [editingProject, setEditingProject] = useState<UserProject | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditSaving, setIsEditSaving] = useState(false);
+  
+  // Delete project state
+  const [deletingProject, setDeletingProject] = useState<UserProject | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch user projects
+  const { data: userProjects, isLoading: projectsLoading } = useQuery({
+    queryKey: ['user-projects', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('user_projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as UserProject[];
+    },
+    enabled: !!user,
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -65,7 +110,6 @@ export default function Profile() {
         setBio(data.bio || '');
         setLocation(data.location || '');
       } else {
-        // Create profile if it doesn't exist
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({ id: user.id })
@@ -83,8 +127,33 @@ export default function Profile() {
     }
   };
 
+  const validatePhoneNumber = (phone: string): boolean => {
+    if (!phone) {
+      setPhoneError('');
+      return true;
+    }
+    const cleanPhone = phone.replace(/\s/g, '');
+    const phoneRegex = /^[0-9]{10,15}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      setPhoneError('Phone number must be 10-15 digits only');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setPhoneNumber(value);
+    validatePhoneNumber(value);
+  };
+
   const handleSave = async () => {
     if (!user) return;
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      toast.error('Please enter a valid phone number');
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -107,6 +176,86 @@ export default function Profile() {
       console.error(error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const openEditDialog = (project: UserProject) => {
+    setEditingProject(project);
+    setEditTitle(project.title);
+    setEditDescription(project.description || '');
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingProject) return;
+
+    setIsEditSaving(true);
+    try {
+      const { error } = await supabase
+        .from('user_projects')
+        .update({
+          title: editTitle,
+          description: editDescription || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingProject.id);
+
+      if (error) throw error;
+
+      toast.success('Project updated successfully');
+      setIsEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['user-projects'] });
+    } catch (error: any) {
+      toast.error('Error updating project');
+      console.error(error);
+    } finally {
+      setIsEditSaving(false);
+    }
+  };
+
+  const openDeleteDialog = (project: UserProject) => {
+    setDeletingProject(project);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deletingProject) return;
+
+    setIsDeleting(true);
+    try {
+      // First delete project parts
+      await supabase
+        .from('user_project_parts')
+        .delete()
+        .eq('user_project_id', deletingProject.id);
+
+      // Then delete the project
+      const { error } = await supabase
+        .from('user_projects')
+        .delete()
+        .eq('id', deletingProject.id);
+
+      if (error) throw error;
+
+      toast.success('Project deleted successfully');
+      setIsDeleteDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['user-projects'] });
+    } catch (error: any) {
+      toast.error('Error deleting project');
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const getStatusBadge = (status: string | null) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-500/10 text-red-500 border-red-500/20">Rejected</Badge>;
+      default:
+        return <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Pending</Badge>;
     }
   };
 
@@ -206,10 +355,14 @@ export default function Profile() {
                   </Label>
                   <Input
                     id="phoneNumber"
-                    placeholder="Enter your mobile number"
+                    placeholder="Enter your mobile number (10-15 digits)"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    className={phoneError ? 'border-destructive' : ''}
                   />
+                  {phoneError && (
+                    <p className="text-xs text-destructive">{phoneError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -246,7 +399,7 @@ export default function Profile() {
               <div className="flex justify-end">
                 <Button
                   onClick={handleSave}
-                  disabled={isSaving}
+                  disabled={isSaving || !!phoneError}
                   className="gap-2 gradient-primary text-primary-foreground"
                 >
                   <Save className="h-4 w-4" />
@@ -256,30 +409,134 @@ export default function Profile() {
             </CardContent>
           </Card>
 
-          {/* Account Info */}
+          {/* My Projects */}
           <Card>
             <CardHeader>
-              <CardTitle>Account Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <FolderOpen className="h-5 w-5" />
+                My Submitted Projects
+              </CardTitle>
+              <CardDescription>
+                Manage your submitted hardware projects
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">User ID</span>
-                <code className="text-xs bg-muted px-2 py-1 rounded">
-                  {user.id.slice(0, 8)}...
-                </code>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Account Created</span>
-                <span className="text-sm">
-                  {user.created_at
-                    ? new Date(user.created_at).toLocaleDateString()
-                    : 'N/A'}
-                </span>
-              </div>
+            <CardContent>
+              {projectsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : userProjects && userProjects.length > 0 ? (
+                <div className="space-y-4">
+                  {userProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="flex items-center justify-between p-4 rounded-lg border bg-card"
+                    >
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium">{project.title}</h4>
+                          {getStatusBadge(project.status)}
+                        </div>
+                        {project.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-1">
+                            {project.description}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Submitted on {new Date(project.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(project)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => openDeleteDialog(project)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>You haven't submitted any projects yet.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Edit Project Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+            <DialogDescription>
+              Update your project details
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editTitle">Title</Label>
+              <Input
+                id="editTitle"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editDescription">Description</Label>
+              <Textarea
+                id="editDescription"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSave} disabled={isEditSaving || !editTitle}>
+              {isEditSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingProject?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }
