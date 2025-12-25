@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/categories/CategoryCard';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Sparkles, Cpu, Zap, Users, ChevronRight, CircuitBoard, Laptop, Wrench, Bot, Shield, Headphones } from 'lucide-react';
+import { ArrowRight, Sparkles, Cpu, Zap, ChevronRight, CircuitBoard, Wrench, Bot, Shield, Headphones, Upload, Monitor } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project } from '@/types/database';
@@ -17,9 +17,9 @@ const services = [
     description: 'Curated projects for Arduino, ESP32, Raspberry Pi, Jetson Nano and more with complete parts lists.',
   },
   {
-    icon: Laptop,
-    title: 'Laptop Finder',
-    description: 'Find the perfect laptop for your needs with our advanced filtering and AI recommendations.',
+    icon: Upload,
+    title: 'Upload Your Project',
+    description: 'Share your hardware creations with the community and help others learn from your builds.',
   },
   {
     icon: Wrench,
@@ -159,7 +159,7 @@ export default function Index() {
             {[
               { icon: Cpu, value: '50+', label: 'Hardware Projects' },
               { icon: Zap, value: 'AI', label: 'Powered Suggestions' },
-              { icon: Users, value: '1K+', label: 'Happy Builders' },
+              { icon: Monitor, value: 'Custom', label: 'PC Build Suggestion' },
               { icon: Sparkles, value: '24/7', label: 'Support' },
             ].map((stat, index) => (
               <div key={index} className="text-center space-y-2">
