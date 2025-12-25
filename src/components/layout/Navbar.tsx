@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useShoppingCart } from '@/hooks/useShoppingCart';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { NotificationsDropdown } from '@/components/notifications/NotificationsDropdown';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart } from 'lucide-react';
+import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart, UserCircle } from 'lucide-react';
 import { useState } from 'react';
 
 const navLinks = [
@@ -79,6 +80,9 @@ export function Navbar() {
           {/* Theme Toggle */}
           <ThemeToggle />
 
+          {/* Notifications */}
+          <NotificationsDropdown />
+
           {/* User Menu - 3 line icon */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -100,6 +104,12 @@ export function Navbar() {
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                      <UserCircle className="h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/" className="flex items-center gap-2 cursor-pointer">
                       <Home className="h-4 w-4" />
