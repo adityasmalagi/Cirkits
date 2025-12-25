@@ -141,14 +141,17 @@ export function ProjectCard({ project, isFavorite, onToggleFavorite }: ProjectCa
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-1 font-bold text-primary">
-              <IndianRupee className="h-4 w-4" />
-              <span>
-                {actualTotal > 0 
-                  ? actualTotal.toLocaleString('en-IN')
-                  : project.estimated_cost?.toLocaleString('en-IN') || '0'
-                }
-              </span>
+            <div className="text-right">
+              <div className="flex items-center gap-1 font-bold text-primary">
+                <IndianRupee className="h-4 w-4" />
+                <span>
+                  {actualTotal > 0 
+                    ? actualTotal.toLocaleString('en-IN')
+                    : project.estimated_cost?.toLocaleString('en-IN') || '0'
+                  }
+                </span>
+                <span className="text-[10px] font-normal text-muted-foreground">*</span>
+              </div>
             </div>
           </div>
 
