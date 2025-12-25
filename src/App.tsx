@@ -7,7 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
-import Laptops from "./pages/Laptops";
+import PCBuild from "./pages/PCBuild";
 import AISuggest from "./pages/AISuggest";
 import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
@@ -27,7 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:slug" element={<ProjectDetail />} />
-            <Route path="/laptops" element={<Laptops />} />
+            <Route path="/pc-build" element={<PCBuild />} />
             <Route path="/ai-suggest" element={<AISuggest />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/favorites" element={<Favorites />} />
