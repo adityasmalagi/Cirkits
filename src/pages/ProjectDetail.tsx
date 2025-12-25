@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Clock, DollarSign, Heart, ShoppingCart, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Clock, IndianRupee, Heart, ShoppingCart, ExternalLink } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, ProjectPart, Product } from '@/types/database';
@@ -175,8 +175,8 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-6 text-muted-foreground">
                 {project.estimated_cost && (
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5" />
-                    <span>Est. ${project.estimated_cost}</span>
+                    <IndianRupee className="h-5 w-5" />
+                    <span>Est. ₹{project.estimated_cost?.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 {project.estimated_time && (
@@ -231,7 +231,7 @@ export default function ProjectDetail() {
                       <span className="text-muted-foreground truncate pr-2">
                         {part.product?.name} {part.quantity > 1 && `×${part.quantity}`}
                       </span>
-                      <span>${((part.product?.price || 0) * part.quantity).toLocaleString()}</span>
+                      <span>₹{((part.product?.price || 0) * part.quantity).toLocaleString('en-IN')}</span>
                     </div>
                   ))}
                 </div>
@@ -240,7 +240,7 @@ export default function ProjectDetail() {
 
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span className="text-primary">${totalCost.toLocaleString()}</span>
+                  <span className="text-primary">₹{totalCost.toLocaleString('en-IN')}</span>
                 </div>
 
                 <p className="text-xs text-muted-foreground">

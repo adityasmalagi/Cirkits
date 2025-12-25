@@ -15,7 +15,7 @@ export default function Laptops() {
   const [search, setSearch] = useState('');
   const [brand, setBrand] = useState('all');
   const [useCase, setUseCase] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 3000]);
+  const [priceRange, setPriceRange] = useState([0, 300000]);
 
   const { data: laptops, isLoading } = useQuery({
     queryKey: ['laptops'],
@@ -70,8 +70,8 @@ export default function Laptops() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Price: ${priceRange[0]} - ${priceRange[1]}</Label>
-              <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={3000} step={100} />
+              <Label>Price: ₹{priceRange[0].toLocaleString('en-IN')} - ₹{priceRange[1].toLocaleString('en-IN')}</Label>
+              <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={300000} step={5000} />
             </div>
           </div>
 

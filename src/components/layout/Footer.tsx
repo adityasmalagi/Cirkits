@@ -11,7 +11,7 @@ export function Footer() {
               <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
                 <Cpu className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-gradient">TechHub</span>
+              <span className="text-gradient">Cirkit</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               Your one-stop platform for hardware projects, PC builds, and AI-powered recommendations.
@@ -53,7 +53,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} TechHub. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Cirkit. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -47,10 +47,10 @@ export function ProductCard({ product, quantity = 1, notes }: ProductCardProps) 
 
           <div className="flex items-center justify-between">
             <span className="font-semibold text-primary">
-              ${product.price?.toLocaleString()}
+              ₹{product.price?.toLocaleString('en-IN')}
               {quantity > 1 && (
                 <span className="text-muted-foreground font-normal text-sm ml-2">
-                  (${((product.price || 0) * quantity).toLocaleString()} total)
+                  (₹{((product.price || 0) * quantity).toLocaleString('en-IN')} total)
                 </span>
               )}
             </span>

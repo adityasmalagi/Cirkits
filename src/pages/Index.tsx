@@ -3,11 +3,45 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/categories/CategoryCard';
 import { ProjectCard } from '@/components/projects/ProjectCard';
-import { ArrowRight, Sparkles, Cpu, Zap, Users, ChevronRight } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, Sparkles, Cpu, Zap, Users, ChevronRight, CircuitBoard, Laptop, Wrench, Bot, Shield, Headphones } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const services = [
+  {
+    icon: CircuitBoard,
+    title: 'Hardware Projects',
+    description: 'Curated projects for Arduino, ESP32, Raspberry Pi, Jetson Nano and more with complete parts lists.',
+  },
+  {
+    icon: Laptop,
+    title: 'Laptop Finder',
+    description: 'Find the perfect laptop for your needs with our advanced filtering and AI recommendations.',
+  },
+  {
+    icon: Wrench,
+    title: 'PC Building',
+    description: 'Build your dream PC with curated component lists and compatibility checks.',
+  },
+  {
+    icon: Bot,
+    title: 'AI Suggestions',
+    description: 'Get personalized hardware recommendations powered by AI based on your requirements.',
+  },
+  {
+    icon: Shield,
+    title: 'Trusted Components',
+    description: 'All products are vetted and linked to trusted sellers for safe purchasing.',
+  },
+  {
+    icon: Headphones,
+    title: '24/7 Support',
+    description: 'Our AI assistant is always available to help you with your hardware questions.',
+  },
+];
 
 export default function Index() {
   const { data: categories, isLoading: categoriesLoading } = useQuery({
@@ -50,12 +84,12 @@ export default function Index() {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Build Your Perfect
-              <span className="text-gradient block">Hardware Project</span>
+              Your Complete
+              <span className="text-gradient block">Electronics Platform</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover curated PC builds, IoT projects, and get AI-powered recommendations for your next hardware adventure.
+              Discover curated hardware projects for Arduino, ESP32, Raspberry Pi, and more. Get AI-powered recommendations for your next build.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -96,41 +130,37 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Services Section */}
       <section className="container py-16">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold">Browse by Category</h2>
-            <p className="text-muted-foreground mt-1">Explore projects across different platforms</p>
-          </div>
-          <Link to="/projects">
-            <Button variant="ghost" className="gap-2">
-              View All
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </Link>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">Our Services</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Everything you need to bring your hardware projects to life, from component selection to AI-powered recommendations.
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categoriesLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-40" />
-            ))
-          ) : (
-            categories?.map((category) => (
-              <CategoryCard key={category.id} category={category} />
-            ))
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services.map((service, index) => (
+            <Card key={index} className="card-hover">
+              <CardContent className="p-6 space-y-4">
+                <div className="h-12 w-12 rounded-lg gradient-primary flex items-center justify-center">
+                  <service.icon className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold">{service.title}</h3>
+                <p className="text-muted-foreground">{service.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
 
-      {/* Featured Projects Section */}
+      {/* Categories Section */}
       <section className="bg-muted/50 py-16">
         <div className="container">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-bold">Featured Projects</h2>
-              <p className="text-muted-foreground mt-1">Hand-picked builds to get you started</p>
+              <h2 className="text-3xl font-bold">Browse by Category</h2>
+              <p className="text-muted-foreground mt-1">Explore projects across different platforms</p>
             </div>
             <Link to="/projects">
               <Button variant="ghost" className="gap-2">
@@ -140,17 +170,45 @@ export default function Index() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {projectsLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-80" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categoriesLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-40" />
               ))
             ) : (
-              featuredProjects?.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+              categories?.map((category) => (
+                <CategoryCard key={category.id} category={category} />
               ))
             )}
           </div>
+        </div>
+      </section>
+
+      {/* Featured Projects Section */}
+      <section className="container py-16">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-bold">Featured Projects</h2>
+            <p className="text-muted-foreground mt-1">Hand-picked builds to get you started</p>
+          </div>
+          <Link to="/projects">
+            <Button variant="ghost" className="gap-2">
+              View All
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {projectsLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-80" />
+            ))
+          ) : (
+            featuredProjects?.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))
+          )}
         </div>
       </section>
 
