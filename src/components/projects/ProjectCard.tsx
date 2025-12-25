@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, Clock, DollarSign } from 'lucide-react';
+import { Heart, Clock, IndianRupee } from 'lucide-react';
 import { Project, Category } from '@/types/database';
 import { cn } from '@/lib/utils';
 
@@ -67,8 +67,8 @@ export function ProjectCard({ project, isFavorite, onToggleFavorite }: ProjectCa
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           {project.estimated_cost && (
             <div className="flex items-center gap-1">
-              <DollarSign className="h-4 w-4" />
-              <span>${project.estimated_cost}</span>
+              <IndianRupee className="h-4 w-4" />
+              <span>₹{project.estimated_cost?.toLocaleString('en-IN')}</span>
             </div>
           )}
           {project.estimated_time && (

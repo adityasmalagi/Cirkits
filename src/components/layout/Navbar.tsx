@@ -36,7 +36,7 @@ export function Navbar() {
             <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
               <Cpu className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-gradient">TechHub</span>
+            <span className="text-gradient">Cirkit</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">

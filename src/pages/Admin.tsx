@@ -342,7 +342,7 @@ function ProductsTab({ products, categories, isLoading }: { products?: any[]; ca
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price (₹)</Label>
                   <Input id="price" name="price" type="number" step="0.01" defaultValue={editItem?.price || ''} />
                 </div>
                 <div className="space-y-2">
@@ -395,7 +395,7 @@ function ProductsTab({ products, categories, isLoading }: { products?: any[]; ca
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category?.name || '-'}</TableCell>
-                  <TableCell>${product.price || '-'}</TableCell>
+                  <TableCell>₹{product.price?.toLocaleString('en-IN') || '-'}</TableCell>
                   <TableCell>{product.affiliate_source || '-'}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="ghost" size="icon" onClick={() => { setEditItem(product); setOpen(true); }}>
@@ -533,7 +533,7 @@ function ProjectsTab({ projects, categories, isLoading }: { projects?: any[]; ca
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="estimated_cost">Est. Cost ($)</Label>
+                  <Label htmlFor="estimated_cost">Est. Cost (₹)</Label>
                   <Input id="estimated_cost" name="estimated_cost" type="number" step="0.01" defaultValue={editItem?.estimated_cost || ''} />
                 </div>
                 <div className="space-y-2">
@@ -694,7 +694,7 @@ function LaptopsTab({ laptops, isLoading }: { laptops?: Laptop[]; isLoading: boo
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price (₹)</Label>
                   <Input id="price" name="price" type="number" step="0.01" defaultValue={editItem?.price || ''} />
                 </div>
                 <div className="space-y-2">
@@ -760,7 +760,7 @@ function LaptopsTab({ laptops, isLoading }: { laptops?: Laptop[]; isLoading: boo
                 <TableRow key={laptop.id}>
                   <TableCell className="font-medium">{laptop.name}</TableCell>
                   <TableCell>{laptop.brand}</TableCell>
-                  <TableCell>${laptop.price || '-'}</TableCell>
+                  <TableCell>₹{laptop.price?.toLocaleString('en-IN') || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{laptop.cpu} / {laptop.ram}GB</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="ghost" size="icon" onClick={() => { setEditItem(laptop); setOpen(true); }}>

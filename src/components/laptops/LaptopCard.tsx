@@ -77,7 +77,7 @@ export function LaptopCard({ laptop, isFavorite, onToggleFavorite }: LaptopCardP
 
         <div className="flex items-center justify-between pt-2">
           <span className="font-bold text-lg">
-            ${laptop.price?.toLocaleString()}
+            ₹{laptop.price?.toLocaleString('en-IN')}
           </span>
           {laptop.affiliate_url && (
             <Button size="sm" className="gradient-primary text-primary-foreground gap-1">
