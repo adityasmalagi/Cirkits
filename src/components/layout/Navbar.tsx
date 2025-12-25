@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useShoppingCart } from '@/hooks/useShoppingCart';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -9,10 +10,9 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Monitor, Cpu, Server, Wifi, Brain, Laptop, Sparkles, User, LogOut, Settings, Heart, Menu, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
-
-import { Home } from 'lucide-react';
 
 const navLinks = [
   { name: 'Home', href: '/', icon: Home },
@@ -23,8 +23,11 @@ const navLinks = [
 
 export function Navbar() {
   const { user, isAdmin, signOut } = useAuth();
+  const { getTotalItems, setIsOpen } = useShoppingCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const totalItems = getTotalItems();
 
   const handleSignOut = async () => {
     await signOut();
@@ -54,7 +57,23 @@ export function Navbar() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {/* Cart Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            onClick={() => setIsOpen(true)}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {totalItems > 0 && (
+              <Badge 
+                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs gradient-primary border-0"
+              >
+                {totalItems}
+              </Badge>
+            )}
+          </Button>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

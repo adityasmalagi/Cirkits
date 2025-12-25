@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ProjectCard } from '@/components/projects/ProjectCard';
@@ -6,17 +6,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, IndianRupee } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, DifficultyLevel } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+type BudgetRange = 'all' | 'under1000' | '1000to5000' | 'above5000';
+
+const budgetRanges = [
+  { id: 'all' as BudgetRange, label: 'All Budgets', range: '₹0 - ∞' },
+  { id: 'under1000' as BudgetRange, label: 'Under ₹1,000', range: '≤₹1K' },
+  { id: '1000to5000' as BudgetRange, label: '₹1,000 - ₹5,000', range: '₹1K-5K' },
+  { id: 'above5000' as BudgetRange, label: 'Above ₹5,000', range: '₹5K+' },
+];
 
 export default function Projects() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
+  const [budgetFilter, setBudgetFilter] = useState<BudgetRange>('all');
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -63,6 +74,25 @@ export default function Projects() {
     },
     enabled: !!categories,
   });
+
+  // Filter projects by budget on the client side
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    
+    return projects.filter(project => {
+      const cost = project.estimated_cost || 0;
+      switch (budgetFilter) {
+        case 'under1000':
+          return cost < 1000;
+        case '1000to5000':
+          return cost >= 1000 && cost <= 5000;
+        case 'above5000':
+          return cost > 5000;
+        default:
+          return true;
+      }
+    });
+  }, [projects, budgetFilter]);
 
   const { data: favorites, refetch: refetchFavorites } = useQuery({
     queryKey: ['favorites', user?.id],
@@ -112,9 +142,10 @@ export default function Projects() {
   const clearFilters = () => {
     setSearchParams({});
     setSearch('');
+    setBudgetFilter('all');
   };
 
-  const hasFilters = categoryFilter || difficultyFilter || search;
+  const hasFilters = categoryFilter || difficultyFilter || search || budgetFilter !== 'all';
 
   return (
     <Layout>
@@ -125,6 +156,27 @@ export default function Projects() {
           <p className="text-muted-foreground mt-1">
             Browse our curated collection of hardware projects
           </p>
+        </div>
+
+        {/* Budget Filter Buttons */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+            <IndianRupee className="h-4 w-4" />
+            Budget:
+          </span>
+          {budgetRanges.map((range) => (
+            <Button
+              key={range.id}
+              variant={budgetFilter === range.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setBudgetFilter(range.id)}
+              className={cn(
+                budgetFilter === range.id && 'gradient-primary text-primary-foreground'
+              )}
+            >
+              {range.label}
+            </Button>
+          ))}
         </div>
 
         {/* Filters */}
@@ -224,6 +276,15 @@ export default function Projects() {
                 />
               </Badge>
             )}
+            {budgetFilter !== 'all' && (
+              <Badge variant="secondary" className="gap-1">
+                {budgetRanges.find(b => b.id === budgetFilter)?.label}
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setBudgetFilter('all')}
+                />
+              </Badge>
+            )}
           </div>
         )}
 
@@ -233,7 +294,7 @@ export default function Projects() {
             Array.from({ length: 8 }).map((_, i) => (
               <Skeleton key={i} className="h-80" />
             ))
-          ) : projects?.length === 0 ? (
+          ) : filteredProjects?.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <p className="text-muted-foreground">No projects found matching your criteria.</p>
               <Button variant="link" onClick={clearFilters}>
@@ -241,7 +302,7 @@ export default function Projects() {
               </Button>
             </div>
           ) : (
-            projects?.map((project) => (
+            filteredProjects?.map((project) => (
               <ProjectCard
                 key={project.id}
                 project={project}

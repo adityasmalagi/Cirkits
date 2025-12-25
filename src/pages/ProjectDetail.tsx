@@ -1,17 +1,19 @@
 import { useParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
+import { ProjectBuildWizard } from '@/components/projects/ProjectBuildWizard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Clock, IndianRupee, Heart, ShoppingCart, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Clock, IndianRupee, Heart, ShoppingCart, ExternalLink, Wrench } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, ProjectPart, Product } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useShoppingCart } from '@/hooks/useShoppingCart';
 import { cn } from '@/lib/utils';
 
 const difficultyColors = {
@@ -24,6 +26,7 @@ export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { addProjectItems } = useShoppingCart();
 
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', slug],
@@ -32,9 +35,9 @@ export default function ProjectDetail() {
         .from('projects')
         .select('*, category:categories(*)')
         .eq('slug', slug)
-        .single();
+        .maybeSingle();
       if (error) throw error;
-      return data as Project & { category: Category };
+      return data as (Project & { category: Category }) | null;
     },
   });
 
@@ -93,6 +96,30 @@ export default function ProjectDetail() {
     refetchFavorite();
     toast({
       title: isFavorite ? 'Removed from favorites' : 'Added to favorites',
+    });
+  };
+
+  const handleBuildThis = () => {
+    if (!parts || parts.length === 0) {
+      toast({
+        title: 'No components',
+        description: 'This project has no components listed yet.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const items = parts
+      .filter(part => part.product)
+      .map(part => ({
+        product: part.product,
+        quantity: part.quantity || 1,
+      }));
+
+    addProjectItems(items, project?.title || 'Project');
+    toast({
+      title: 'Added to Cart!',
+      description: `${items.length} components from ${project?.title} added to your cart.`,
     });
   };
 
@@ -186,7 +213,30 @@ export default function ProjectDetail() {
                   </div>
                 )}
               </div>
+
+              {/* Build This Button */}
+              {parts && parts.length > 0 && (
+                <Button 
+                  size="lg" 
+                  className="gradient-primary text-primary-foreground gap-2"
+                  onClick={handleBuildThis}
+                >
+                  <Wrench className="h-5 w-5" />
+                  Build This Project - Add All to Cart
+                </Button>
+              )}
             </div>
+
+            <Separator />
+
+            {/* Build Guide Wizard */}
+            {parts && parts.length > 0 && (
+              <ProjectBuildWizard 
+                project={project} 
+                parts={parts} 
+                onAddToCart={handleBuildThis}
+              />
+            )}
 
             <Separator />
 
@@ -225,27 +275,43 @@ export default function ProjectDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  {parts?.map((part) => (
-                    <div key={part.id} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground truncate pr-2">
-                        {part.product?.name} {part.quantity > 1 && `×${part.quantity}`}
-                      </span>
-                      <span>₹{((part.product?.price || 0) * part.quantity).toLocaleString('en-IN')}</span>
+                {parts && parts.length > 0 ? (
+                  <>
+                    <div className="space-y-2">
+                      {parts?.map((part) => (
+                        <div key={part.id} className="flex justify-between text-sm">
+                          <span className="text-muted-foreground truncate pr-2">
+                            {part.product?.name} {part.quantity > 1 && `×${part.quantity}`}
+                          </span>
+                          <span>₹{((part.product?.price || 0) * (part.quantity || 1)).toLocaleString('en-IN')}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                <Separator />
+                    <Separator />
 
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span className="text-primary">₹{totalCost.toLocaleString('en-IN')}</span>
-                </div>
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Total</span>
+                      <span className="text-primary">₹{totalCost.toLocaleString('en-IN')}</span>
+                    </div>
 
-                <p className="text-xs text-muted-foreground">
-                  * Prices are estimates and may vary. Click individual items to view current prices.
-                </p>
+                    <Button 
+                      className="w-full gradient-primary text-primary-foreground gap-2"
+                      onClick={handleBuildThis}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Add All to Cart
+                    </Button>
+
+                    <p className="text-xs text-muted-foreground">
+                      * Prices are estimates and may vary. Click individual items to view current prices.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No components listed for this project yet.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
