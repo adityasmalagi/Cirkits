@@ -72,18 +72,60 @@ export default function Index() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5" />
+      <section className="relative overflow-hidden min-h-[90vh] flex items-center">
+        {/* Animated background gradients */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 animate-gradient-shift" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
+        
+        {/* Floating circuit elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Large rotating ring */}
+          <div className="absolute -top-20 -right-20 w-96 h-96 opacity-10">
+            <div className="w-full h-full border-4 border-primary rounded-full animate-spin-slow" />
+          </div>
+          
+          {/* Floating circuit boards */}
+          <div className="absolute top-20 left-10 animate-float" style={{ animationDelay: '0s' }}>
+            <div className="w-16 h-16 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20 flex items-center justify-center">
+              <CircuitBoard className="h-8 w-8 text-primary/40" />
+            </div>
+          </div>
+          
+          <div className="absolute top-40 right-20 animate-float-reverse" style={{ animationDelay: '1s' }}>
+            <div className="w-12 h-12 rounded-lg bg-purple-500/10 backdrop-blur-sm border border-purple-500/20 flex items-center justify-center">
+              <Cpu className="h-6 w-6 text-purple-500/40" />
+            </div>
+          </div>
+          
+          <div className="absolute bottom-32 left-20 animate-float" style={{ animationDelay: '2s' }}>
+            <div className="w-14 h-14 rounded-lg bg-cyan-500/10 backdrop-blur-sm border border-cyan-500/20 flex items-center justify-center">
+              <Zap className="h-7 w-7 text-cyan-500/40" />
+            </div>
+          </div>
+          
+          <div className="absolute bottom-40 right-32 animate-float-reverse" style={{ animationDelay: '0.5s' }}>
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 backdrop-blur-sm border border-green-500/20 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-green-500/40" />
+            </div>
+          </div>
+          
+          {/* Glowing orbs */}
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse-glow" />
+          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute top-1/2 right-10 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl animate-pulse-glow" style={{ animationDelay: '3s' }} />
+          
+          {/* Grid pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+        </div>
         
         <div className="container relative py-20 md:py-32">
           <div className="max-w-3xl mx-auto text-center space-y-6 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <Sparkles className="h-4 w-4" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium backdrop-blur-sm border border-primary/20">
+              <Sparkles className="h-4 w-4 animate-pulse" />
               AI-Powered Hardware Recommendations
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               Your Complete
               <span className="text-gradient block">Electronics Platform</span>
             </h1>
@@ -94,13 +136,13 @@ export default function Index() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Link to="/projects">
-                <Button size="lg" className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto">
+                <Button size="lg" className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto shadow-glow hover:shadow-lg transition-shadow">
                   Browse Projects
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/ai-suggest">
-                <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto backdrop-blur-sm">
                   <Sparkles className="h-4 w-4" />
                   AI Suggestions
                 </Button>
