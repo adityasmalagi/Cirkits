@@ -138,18 +138,18 @@ export default function AISuggest() {
                 <p className="text-muted-foreground text-sm max-w-md mb-6">
                   Tell me about the project you want to build, your budget, and experience level. I'll suggest the perfect components and projects for you.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
                   {[
-                    "I want to build a smart home automation system for ₹10,000",
-                    "Suggest an Arduino plant watering project for beginners",
-                    "Best laptop for programming under ₹80,000",
-                    "Help me build an AI security camera with Jetson Nano",
+                    "Smart home automation under ₹10,000",
+                    "Arduino plant watering for beginners",
+                    "Best laptop for programming ₹80K",
+                    "AI security camera with Jetson Nano",
                   ].map((suggestion) => (
                     <Button
                       key={suggestion}
                       variant="outline"
                       size="sm"
-                      className="text-left h-auto py-2 px-3 text-xs"
+                      className="text-left h-auto py-3 px-4 text-sm whitespace-normal leading-tight"
                       onClick={() => {
                         setInput(suggestion);
                       }}
