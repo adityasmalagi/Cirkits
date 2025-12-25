@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ProjectCard } from '@/components/projects/ProjectCard';
+import { SubmitProjectDialog } from '@/components/projects/SubmitProjectDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -151,14 +152,17 @@ export default function Projects() {
     <Layout>
       <div className="container py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Project Catalog</h1>
-          <p className="text-muted-foreground mt-1">
-            Browse our curated collection of hardware projects
-          </p>
-          <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
-            💡 Prices shown are estimates and may vary. Click product links for current Amazon prices.
-          </p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Project Catalog</h1>
+            <p className="text-muted-foreground mt-1">
+              Browse our curated collection of hardware projects
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
+              💡 Prices shown are estimates and may vary. Click product links for current Amazon prices.
+            </p>
+          </div>
+          <SubmitProjectDialog />
         </div>
 
         {/* Budget Filter Buttons */}
