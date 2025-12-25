@@ -14,7 +14,7 @@ import { useState } from 'react';
 
 const navLinks = [
   { name: 'Projects', href: '/projects', icon: Monitor },
-  { name: 'Laptops', href: '/laptops', icon: Laptop },
+  { name: 'PC Build', href: '/pc-build', icon: Cpu },
   { name: 'AI Suggest', href: '/ai-suggest', icon: Sparkles },
 ];
 
