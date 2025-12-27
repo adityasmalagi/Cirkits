@@ -149,18 +149,12 @@ export default function Index() {
               </Link>
             </div>
 
-            {/* Mobile Quick Navigation */}
-            <div className="grid grid-cols-2 gap-3 pt-4 px-4 md:hidden">
-              <Link to="/pc-build">
-                <Button variant="outline" className="w-full h-12 gap-2 backdrop-blur-sm">
+            {/* Mobile Quick Navigation - PC Build same size as main buttons */}
+            <div className="md:hidden w-full px-4 pt-3">
+              <Link to="/pc-build" className="w-full">
+                <Button size="lg" variant="outline" className="gap-2 w-full backdrop-blur-sm h-12">
                   <Cpu className="h-4 w-4" />
                   PC Build
-                </Button>
-              </Link>
-              <Link to="/laptops">
-                <Button variant="outline" className="w-full h-12 gap-2 backdrop-blur-sm">
-                  <Monitor className="h-4 w-4" />
-                  Laptops
                 </Button>
               </Link>
             </div>
