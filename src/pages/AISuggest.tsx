@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Send, User, Bot, Loader2 } from 'lucide-react';
+import { Sparkles, Send, User, Bot, Loader2, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,6 +18,7 @@ interface Message {
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-suggest`;
 
 export default function AISuggest() {
+  const { user, isLoading: authLoading } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +52,16 @@ export default function AISuggest() {
 
       if (!response.ok) {
         const error = await response.json();
+        if (response.status === 401) {
+          toast.error('Please sign in to use the AI assistant');
+          throw new Error('Please sign in to continue');
+        }
+        if (response.status === 429) {
+          toast.error('Rate limit exceeded. Please try again later.');
+        }
+        if (response.status === 402) {
+          toast.error('AI credits exhausted. Please try again later.');
+        }
         throw new Error(error.error || 'Failed to get AI response');
       }
 
@@ -129,7 +143,23 @@ export default function AISuggest() {
 
         <Card className="h-[60vh] flex flex-col">
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-            {messages.length === 0 ? (
+            {!user && !authLoading ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                  <LogIn className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Sign in to use AI Assistant</h3>
+                <p className="text-muted-foreground text-sm max-w-md mb-6">
+                  Please sign in to access the AI-powered hardware recommendation assistant.
+                </p>
+                <Button asChild className="gradient-primary text-primary-foreground">
+                  <Link to="/auth">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Link>
+                </Button>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8">
                 <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mb-4">
                   <Bot className="h-8 w-8 text-primary-foreground" />
@@ -211,7 +241,7 @@ export default function AISuggest() {
               />
               <Button
                 onClick={sendMessage}
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !user}
                 className="gradient-primary text-primary-foreground px-4"
               >
                 {isLoading ? (
