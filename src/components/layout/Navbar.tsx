@@ -68,7 +68,7 @@ export function Navbar() {
           <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg gradient-primary flex items-center justify-center">
             <Cpu className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
           </div>
-          <span className="text-gradient hidden xs:inline">Cirkit</span>
+          <span className="text-gradient">Cirkit</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -83,24 +83,8 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Mobile Navigation - Horizontal icons */}
-        <nav className="flex md:hidden items-center gap-0.5 flex-1 justify-center mx-2 overflow-x-auto scrollbar-hide">
-          {navLinks.map((link) => (
-            <Link key={link.href} to={link.href}>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="flex flex-col items-center gap-0.5 h-auto py-1.5 px-2 min-w-[48px]"
-              >
-                <link.icon className="h-4 w-4" />
-                <span className="text-[10px] font-medium leading-none">{link.name}</span>
-              </Button>
-            </Link>
-          ))}
-        </nav>
-
         {/* Right side actions */}
-        <div className="flex items-center gap-0.5 md:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
           {/* Cart Button - Always visible */}
           <Button
             variant="ghost"
