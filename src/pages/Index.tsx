@@ -134,24 +134,20 @@ export default function Index() {
               Discover curated hardware projects for Arduino, ESP32, Raspberry Pi, and more. Get AI-powered recommendations for your next build.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-2 md:pt-4 px-4">
-              <Link to="/projects" className="w-full sm:w-auto">
-                <Button size="lg" className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto shadow-glow hover:shadow-lg transition-shadow h-12">
+            <div className="flex flex-col gap-3 justify-center pt-2 md:pt-4 px-4 md:flex-row md:gap-4">
+              <Link to="/projects" className="w-full md:w-auto">
+                <Button size="lg" className="gradient-primary text-primary-foreground gap-2 w-full shadow-glow hover:shadow-lg transition-shadow h-12">
                   Browse Projects
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/ai-suggest" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto backdrop-blur-sm h-12">
+              <Link to="/ai-suggest" className="w-full md:w-auto">
+                <Button size="lg" variant="outline" className="gap-2 w-full backdrop-blur-sm h-12">
                   <Sparkles className="h-4 w-4" />
                   AI Suggestions
                 </Button>
               </Link>
-            </div>
-
-            {/* Mobile Quick Navigation - PC Build same size as main buttons */}
-            <div className="md:hidden w-full px-4 pt-3">
-              <Link to="/pc-build" className="w-full">
+              <Link to="/pc-build" className="w-full md:hidden">
                 <Button size="lg" variant="outline" className="gap-2 w-full backdrop-blur-sm h-12">
                   <Cpu className="h-4 w-4" />
                   PC Build

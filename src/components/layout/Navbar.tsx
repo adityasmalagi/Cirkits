@@ -220,7 +220,6 @@ export function Navbar() {
                       </Avatar>
                       <div className="flex flex-col">
                         <p className="font-medium text-sm">{displayName || user.email?.split('@')[0]}</p>
-                        <p className="text-xs text-muted-foreground truncate max-w-[140px]">{user.email}</p>
                       </div>
                     </div>
                     <DropdownMenuItem asChild>
