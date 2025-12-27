@@ -148,6 +148,22 @@ export default function Index() {
                 </Button>
               </Link>
             </div>
+
+            {/* Mobile Quick Navigation */}
+            <div className="grid grid-cols-2 gap-3 pt-4 px-4 md:hidden">
+              <Link to="/pc-build">
+                <Button variant="outline" className="w-full h-12 gap-2 backdrop-blur-sm">
+                  <Cpu className="h-4 w-4" />
+                  PC Build
+                </Button>
+              </Link>
+              <Link to="/laptops">
+                <Button variant="outline" className="w-full h-12 gap-2 backdrop-blur-sm">
+                  <Monitor className="h-4 w-4" />
+                  Laptops
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
