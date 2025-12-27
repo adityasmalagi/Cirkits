@@ -63,38 +63,55 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full glass">
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4 md:gap-8">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg md:text-xl">
-            <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg gradient-primary flex items-center justify-center">
-              <Cpu className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
-            </div>
-            <span className="text-gradient">Cirkit</span>
-          </Link>
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 font-bold text-lg md:text-xl flex-shrink-0">
+          <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg gradient-primary flex items-center justify-center">
+            <Cpu className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
+          </div>
+          <span className="text-gradient hidden xs:inline">Cirkit</span>
+        </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link key={link.href} to={link.href}>
-                <Button variant="ghost" className="gap-2">
-                  <link.icon className="h-4 w-4" />
-                  {link.name}
-                </Button>
-              </Link>
-            ))}
-          </nav>
-        </div>
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <Link key={link.href} to={link.href}>
+              <Button variant="ghost" className="gap-2">
+                <link.icon className="h-4 w-4" />
+                {link.name}
+              </Button>
+            </Link>
+          ))}
+        </nav>
 
-        <div className="flex items-center gap-1 md:gap-2">
+        {/* Mobile Navigation - Horizontal icons */}
+        <nav className="flex md:hidden items-center gap-0.5 flex-1 justify-center mx-2 overflow-x-auto scrollbar-hide">
+          {navLinks.map((link) => (
+            <Link key={link.href} to={link.href}>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="flex flex-col items-center gap-0.5 h-auto py-1.5 px-2 min-w-[48px]"
+              >
+                <link.icon className="h-4 w-4" />
+                <span className="text-[10px] font-medium leading-none">{link.name}</span>
+              </Button>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Right side actions */}
+        <div className="flex items-center gap-0.5 md:gap-2 flex-shrink-0">
           {/* Cart Button - Always visible */}
           <Button
             variant="ghost"
             size="icon"
-            className="relative h-10 w-10"
+            className="relative h-9 w-9 md:h-10 md:w-10"
             onClick={() => setIsOpen(true)}
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
             {totalItems > 0 && (
               <Badge 
-                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs gradient-primary border-0"
+                className="absolute -top-1 -right-1 h-4 w-4 md:h-5 md:w-5 flex items-center justify-center p-0 text-[10px] md:text-xs gradient-primary border-0"
               >
                 {totalItems}
               </Badge>
@@ -204,10 +221,10 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden h-10 w-10"
+            className="md:hidden h-9 w-9"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -238,61 +255,61 @@ export function Navbar() {
               </div>
             )}
 
-            {/* Navigation Links */}
-            <div className="p-2">
-              <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Navigation</p>
-              <nav className="flex flex-col">
-                {navLinks.map((link) => (
-                  <Link key={link.href} to={link.href} onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
-                      <link.icon className="h-5 w-5" />
-                      {link.name}
-                    </Button>
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            <Separator />
-
-            {/* User Actions */}
-            {user && (
-              <div className="p-2">
-                <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</p>
-                <nav className="flex flex-col">
-                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
-                      <UserCircle className="h-5 w-5" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Link to="/favorites" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
-                      <Heart className="h-5 w-5" />
-                      Favorites
-                    </Button>
-                  </Link>
-                  <Link to="/my-projects" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
-                      <Folder className="h-5 w-5" />
-                      My Projects
-                    </Button>
-                  </Link>
-                  {isAdmin && (
-                    <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
-                        <Settings className="h-5 w-5" />
-                        Admin Panel
-                      </Button>
-                    </Link>
-                  )}
-                </nav>
+            {/* Quick Actions for logged out users */}
+            {!user && (
+              <div className="p-4 flex gap-2">
+                <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="flex-1">
+                  <Button variant="outline" className="w-full h-11">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth?tab=signup" onClick={() => setMobileMenuOpen(false)} className="flex-1">
+                  <Button className="w-full h-11 gradient-primary text-primary-foreground">
+                    Sign Up
+                  </Button>
+                </Link>
               </div>
             )}
 
-            <Separator />
+            {/* Account Section for logged in users */}
+            {user && (
+              <>
+                <div className="p-2">
+                  <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</p>
+                  <nav className="flex flex-col">
+                    <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
+                        <UserCircle className="h-5 w-5" />
+                        Profile
+                      </Button>
+                    </Link>
+                    <Link to="/favorites" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
+                        <Heart className="h-5 w-5" />
+                        Favorites
+                      </Button>
+                    </Link>
+                    <Link to="/my-projects" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
+                        <Folder className="h-5 w-5" />
+                        My Projects
+                      </Button>
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
+                          <Settings className="h-5 w-5" />
+                          Admin Panel
+                        </Button>
+                      </Link>
+                    )}
+                  </nav>
+                </div>
+                <Separator />
+              </>
+            )}
 
-            {/* Settings */}
+            {/* Settings - Always visible */}
             <div className="p-2">
               <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Settings</p>
               <div className="flex flex-col">
@@ -315,7 +332,7 @@ export function Navbar() {
                   )}
                 </Button>
                 
-                {/* Notifications placeholder */}
+                {/* Notifications */}
                 <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base">
                   <Bell className="h-5 w-5" />
                   Notifications
@@ -323,9 +340,9 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Auth Actions */}
-            <div className="mt-auto p-4 border-t border-border">
-              {user ? (
+            {/* Sign Out for logged in users */}
+            {user && (
+              <div className="mt-auto p-4 border-t border-border">
                 <Button 
                   variant="destructive" 
                   className="w-full h-12 text-base gap-2"
@@ -334,21 +351,8 @@ export function Navbar() {
                   <LogOut className="h-5 w-5" />
                   Sign Out
                 </Button>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full h-12 text-base">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link to="/auth?tab=signup" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full h-12 text-base gradient-primary text-primary-foreground">
-                      Create Account
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
