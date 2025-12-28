@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/categories/CategoryCard';
@@ -9,7 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/hooks/useAuth';
 
 const services = [
   {
@@ -45,16 +44,6 @@ const services = [
 ];
 
 export default function Index() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  const handleProtectedNavigation = (path: string) => {
-    if (!user) {
-      navigate('/auth');
-    } else {
-      navigate(path);
-    }
-  };
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
@@ -150,28 +139,34 @@ export default function Index() {
               <Button 
                 size="lg" 
                 className="gradient-primary text-primary-foreground gap-2 w-full md:w-auto shadow-glow hover:shadow-lg transition-shadow h-12"
-                onClick={() => handleProtectedNavigation('/projects')}
+                asChild
               >
-                Browse Projects
-                <ArrowRight className="h-4 w-4" />
+                <Link to="/projects">
+                  Browse Projects
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
                 className="gap-2 w-full md:w-auto backdrop-blur-sm h-12"
-                onClick={() => handleProtectedNavigation('/ai-suggest')}
+                asChild
               >
-                <Sparkles className="h-4 w-4" />
-                AI Suggestions
+                <Link to="/ai-suggest">
+                  <Sparkles className="h-4 w-4" />
+                  AI Suggestions
+                </Link>
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
                 className="gap-2 w-full md:hidden backdrop-blur-sm h-12"
-                onClick={() => handleProtectedNavigation('/pc-build')}
+                asChild
               >
-                <Cpu className="h-4 w-4" />
-                PC Build
+                <Link to="/pc-build">
+                  <Cpu className="h-4 w-4" />
+                  PC Build
+                </Link>
               </Button>
             </div>
           </div>
@@ -300,10 +295,12 @@ export default function Index() {
               size="lg" 
               variant="secondary" 
               className="gap-2 h-12"
-              onClick={() => handleProtectedNavigation('/ai-suggest')}
+              asChild
             >
-              Try AI Suggestions
-              <ArrowRight className="h-4 w-4" />
+              <Link to="/ai-suggest">
+                Try AI Suggestions
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </div>

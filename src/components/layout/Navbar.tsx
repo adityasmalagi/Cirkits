@@ -60,13 +60,6 @@ export function Navbar() {
     navigate('/');
   };
 
-  const handleProtectedNavigation = (e: React.MouseEvent, path: string) => {
-    if (!user) {
-      e.preventDefault();
-      navigate('/auth');
-    }
-  };
-
   const handleCartClick = () => {
     if (!user) {
       navigate('/auth');
@@ -88,21 +81,14 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => {
-            const isProtected = ['/projects', '/pc-build', '/ai-suggest'].includes(link.href);
-            return (
-              <Link 
-                key={link.href} 
-                to={link.href}
-                onClick={(e) => isProtected && handleProtectedNavigation(e, link.href)}
-              >
-                <Button variant="ghost" className="gap-2">
-                  <link.icon className="h-4 w-4" />
-                  {link.name}
-                </Button>
-              </Link>
-            );
-          })}
+          {navLinks.map((link) => (
+            <Link key={link.href} to={link.href}>
+              <Button variant="ghost" className="gap-2">
+                <link.icon className="h-4 w-4" />
+                {link.name}
+              </Button>
+            </Link>
+          ))}
         </nav>
 
         {/* Right side actions */}
