@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Heart, Clock, IndianRupee, ExternalLink, ShoppingCart } from 'lucide-re
 import { Project, Category, ProjectPart } from '@/types/database';
 import { cn } from '@/lib/utils';
 import { useShoppingCart } from '@/hooks/useShoppingCart';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProjectCardProps {
   project: Project & { category?: Category; project_parts?: ProjectPart[] };
@@ -21,6 +22,8 @@ const difficultyColors = {
 
 export function ProjectCard({ project, isFavorite, onToggleFavorite }: ProjectCardProps) {
   const { addProjectItems, setIsOpen } = useShoppingCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const parts = project.project_parts || [];
   
   // Calculate actual total from parts
@@ -29,6 +32,13 @@ export function ProjectCard({ project, isFavorite, onToggleFavorite }: ProjectCa
     const qty = part.quantity || 1;
     return sum + (price * qty);
   }, 0);
+
+  const handleProjectClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      navigate('/auth');
+    }
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -81,7 +91,7 @@ export function ProjectCard({ project, isFavorite, onToggleFavorite }: ProjectCa
           </Badge>
         </div>
         
-        <Link to={`/projects/${project.slug}`}>
+        <Link to={`/projects/${project.slug}`} onClick={handleProjectClick}>
           <h3 className="font-semibold text-base md:text-lg hover:text-primary transition-colors line-clamp-1">
             {project.title}
           </h3>
