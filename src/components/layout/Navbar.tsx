@@ -60,6 +60,21 @@ export function Navbar() {
     navigate('/');
   };
 
+  const handleProtectedNavigation = (e: React.MouseEvent, path: string) => {
+    if (!user) {
+      e.preventDefault();
+      navigate('/auth');
+    }
+  };
+
+  const handleCartClick = () => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      setIsOpen(true);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full glass">
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
@@ -73,14 +88,21 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
-            <Link key={link.href} to={link.href}>
-              <Button variant="ghost" className="gap-2">
-                <link.icon className="h-4 w-4" />
-                {link.name}
-              </Button>
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isProtected = ['/projects', '/pc-build', '/ai-suggest'].includes(link.href);
+            return (
+              <Link 
+                key={link.href} 
+                to={link.href}
+                onClick={(e) => isProtected && handleProtectedNavigation(e, link.href)}
+              >
+                <Button variant="ghost" className="gap-2">
+                  <link.icon className="h-4 w-4" />
+                  {link.name}
+                </Button>
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right side actions */}
@@ -90,7 +112,7 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             className="relative h-9 w-9 md:h-10 md:w-10"
-            onClick={() => setIsOpen(true)}
+            onClick={handleCartClick}
           >
             <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
             {totalItems > 0 && (

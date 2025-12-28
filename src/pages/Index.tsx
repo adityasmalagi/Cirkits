@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/categories/CategoryCard';
@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/useAuth';
 
 const services = [
   {
@@ -44,6 +45,17 @@ const services = [
 ];
 
 export default function Index() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleProtectedNavigation = (path: string) => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      navigate(path);
+    }
+  };
+
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -135,24 +147,32 @@ export default function Index() {
             </p>
 
             <div className="flex flex-col gap-3 justify-center pt-2 md:pt-4 px-4 md:flex-row md:gap-4">
-              <Link to="/projects" className="w-full md:w-auto">
-                <Button size="lg" className="gradient-primary text-primary-foreground gap-2 w-full shadow-glow hover:shadow-lg transition-shadow h-12">
-                  Browse Projects
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/ai-suggest" className="w-full md:w-auto">
-                <Button size="lg" variant="outline" className="gap-2 w-full backdrop-blur-sm h-12">
-                  <Sparkles className="h-4 w-4" />
-                  AI Suggestions
-                </Button>
-              </Link>
-              <Link to="/pc-build" className="w-full md:hidden">
-                <Button size="lg" variant="outline" className="gap-2 w-full backdrop-blur-sm h-12">
-                  <Cpu className="h-4 w-4" />
-                  PC Build
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                className="gradient-primary text-primary-foreground gap-2 w-full md:w-auto shadow-glow hover:shadow-lg transition-shadow h-12"
+                onClick={() => handleProtectedNavigation('/projects')}
+              >
+                Browse Projects
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="gap-2 w-full md:w-auto backdrop-blur-sm h-12"
+                onClick={() => handleProtectedNavigation('/ai-suggest')}
+              >
+                <Sparkles className="h-4 w-4" />
+                AI Suggestions
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="gap-2 w-full md:hidden backdrop-blur-sm h-12"
+                onClick={() => handleProtectedNavigation('/pc-build')}
+              >
+                <Cpu className="h-4 w-4" />
+                PC Build
+              </Button>
             </div>
           </div>
         </div>
@@ -276,12 +296,15 @@ export default function Index() {
             <p className="text-white/80 text-sm md:text-lg mb-4 md:mb-6">
               Describe your idea and our AI will generate a custom parts list with compatible components tailored to your budget and needs.
             </p>
-            <Link to="/ai-suggest">
-              <Button size="lg" variant="secondary" className="gap-2 h-12">
-                Try AI Suggestions
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="gap-2 h-12"
+              onClick={() => handleProtectedNavigation('/ai-suggest')}
+            >
+              Try AI Suggestions
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </section>

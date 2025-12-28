@@ -53,7 +53,7 @@ export default function Auth() {
             <div className="mx-auto h-12 w-12 rounded-xl gradient-primary flex items-center justify-center mb-4">
               <Cpu className="h-6 w-6 text-primary-foreground" />
             </div>
-            <CardTitle>Welcome to TechHub</CardTitle>
+            <CardTitle>Welcome to Cirkit</CardTitle>
             <CardDescription>Sign in to save favorites and track builds</CardDescription>
           </CardHeader>
           <CardContent>
