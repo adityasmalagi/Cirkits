@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Cpu, 
   HardDrive, 
@@ -6952,6 +6953,21 @@ export default function PCBuild() {
   const [selectedComponents, setSelectedComponents] = useState<Record<string, PCComponent>>({});
   const [budgetTier, setBudgetTier] = useState<BudgetTier>('all');
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const requireAuth = (action: () => void) => {
+    if (!user) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to interact with PC build components.',
+        variant: 'destructive',
+      });
+      navigate('/auth');
+      return;
+    }
+    action();
+  };
 
   // Load build from URL on mount
   useEffect(() => {
@@ -6969,25 +6985,29 @@ export default function PCBuild() {
   }, []);
 
   const toggleComponent = (component: PCComponent) => {
-    setSelectedComponents(prev => {
-      if (prev[component.category]?.id === component.id) {
-        const updated = { ...prev };
-        delete updated[component.category];
-        return updated;
-      }
-      return { ...prev, [component.category]: component };
+    requireAuth(() => {
+      setSelectedComponents(prev => {
+        if (prev[component.category]?.id === component.id) {
+          const updated = { ...prev };
+          delete updated[component.category];
+          return updated;
+        }
+        return { ...prev, [component.category]: component };
+      });
     });
   };
 
   const applyPreset = (preset: PresetBuild) => {
-    const newSelection: Record<string, PCComponent> = {};
-    Object.entries(preset.components).forEach(([category, componentId]) => {
-      const component = pcComponents.find(c => c.id === componentId);
-      if (component) {
-        newSelection[category] = component;
-      }
+    requireAuth(() => {
+      const newSelection: Record<string, PCComponent> = {};
+      Object.entries(preset.components).forEach(([category, componentId]) => {
+        const component = pcComponents.find(c => c.id === componentId);
+        if (component) {
+          newSelection[category] = component;
+        }
+      });
+      setSelectedComponents(newSelection);
     });
-    setSelectedComponents(newSelection);
   };
 
   const shareBuild = async () => {
