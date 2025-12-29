@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useRateLimit } from '@/hooks/useRateLimit';
 import { supabase } from '@/integrations/supabase/client';
-import { Cpu, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Cpu, Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -19,19 +21,89 @@ export default function Auth() {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [lockoutCountdown, setLockoutCountdown] = useState(0);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Rate limiting: 5 attempts per 15 minutes, 15 minute lockout
+  const { 
+    isLocked, 
+    remainingAttempts, 
+    checkRateLimit, 
+    recordAttempt, 
+    getRemainingLockoutTime 
+  } = useRateLimit('auth_signin', {
+    maxAttempts: 5,
+    windowMs: 15 * 60 * 1000,
+    lockoutMs: 15 * 60 * 1000,
+  });
+
+  // Update lockout countdown every second
+  useEffect(() => {
+    if (isLocked) {
+      const updateCountdown = () => {
+        const remaining = getRemainingLockoutTime();
+        setLockoutCountdown(remaining);
+        if (remaining <= 0) {
+          checkRateLimit();
+        }
+      };
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isLocked, getRemainingLockoutTime, checkRateLimit]);
+
+  // Check rate limit on mount
+  useEffect(() => {
+    checkRateLimit();
+  }, [checkRateLimit]);
+
+  const formatLockoutTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Check rate limit before attempting sign in
+    const { allowed } = checkRateLimit();
+    if (!allowed) {
+      toast({ 
+        title: 'Too many attempts', 
+        description: 'Please wait before trying again.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
     const { error } = await signIn(formData.get('email') as string, formData.get('password') as string);
     setIsLoading(false);
+    
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      // Record failed attempt
+      const result = recordAttempt(false);
+      if (result.remainingAttempts > 0) {
+        toast({ 
+          title: 'Error', 
+          description: `${error.message} (${result.remainingAttempts} attempts remaining)`, 
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ 
+          title: 'Account Locked', 
+          description: 'Too many failed attempts. Please try again later.', 
+          variant: 'destructive' 
+        });
+      }
     } else {
+      // Record successful attempt (resets counter)
+      recordAttempt(true);
       navigate('/');
     }
   };
@@ -134,6 +206,22 @@ export default function Auth() {
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>
                 </TabsList>
                 <TabsContent value="signin">
+                  {isLocked && (
+                    <Alert variant="destructive" className="mt-4 mb-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Too many failed login attempts. Please wait {formatLockoutTime(lockoutCountdown)} before trying again.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {!isLocked && remainingAttempts < 5 && remainingAttempts > 0 && (
+                    <Alert className="mt-4 mb-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        {remainingAttempts} login attempt{remainingAttempts !== 1 ? 's' : ''} remaining before temporary lockout.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <form onSubmit={handleSignIn} className="space-y-4 mt-4">
                     <div className="space-y-2">
                       <Label htmlFor="signin-email">Email</Label>
@@ -173,12 +261,14 @@ export default function Auth() {
                         Forgot password?
                       </Button>
                     </div>
-                    <Button type="submit" className="w-full gradient-primary" disabled={isLoading}>
+                    <Button type="submit" className="w-full gradient-primary" disabled={isLoading || isLocked}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Signing in...
                         </>
+                      ) : isLocked ? (
+                        `Locked (${formatLockoutTime(lockoutCountdown)})`
                       ) : (
                         'Sign In'
                       )}
