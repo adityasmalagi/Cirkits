@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +11,15 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Mock notifications - in a real app, these would come from the database
-const mockNotifications = [
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+const initialNotifications: Notification[] = [
   {
     id: '1',
     title: 'Welcome to Cirkit!',
@@ -36,7 +44,12 @@ const mockNotifications = [
 ];
 
 export function NotificationsDropdown() {
-  const unreadCount = mockNotifications.filter((n) => !n.read).length;
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
 
   return (
     <DropdownMenu>
@@ -60,35 +73,46 @@ export function NotificationsDropdown() {
           )}
         </div>
         <ScrollArea className="h-[300px]">
-          {mockNotifications.length > 0 ? (
-            mockNotifications.map((notification) => (
-              <DropdownMenuItem
+          {notifications.length > 0 ? (
+            notifications.map((notification) => (
+              <div
                 key={notification.id}
-                className={`flex flex-col items-start gap-1 p-3 cursor-pointer focus:bg-accent focus:text-accent-foreground ${
-                  !notification.read ? 'bg-primary/5' : ''
+                className={`flex flex-col items-start gap-1 p-3 cursor-pointer hover:bg-accent/50 transition-colors ${
+                  !notification.read ? 'bg-primary/10' : ''
                 }`}
+                onClick={() => {
+                  setNotifications(prev => 
+                    prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+                  );
+                }}
               >
-                <div className="flex items-start gap-2 w-full">
+                <div className="flex items-start gap-3 w-full">
                   {!notification.read && (
-                    <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-primary mt-1 flex-shrink-0" />
                   )}
-                  <div className={!notification.read ? '' : 'ml-4'}>
-                    <p className="font-medium text-sm text-foreground">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground">{notification.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
+                  <div className={`flex-1 ${notification.read ? 'ml-5' : ''}`}>
+                    <p className="font-semibold text-sm text-foreground leading-tight">{notification.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{notification.message}</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1.5">{notification.time}</p>
                   </div>
                 </div>
-              </DropdownMenuItem>
+              </div>
             ))
           ) : (
-            <div className="p-4 text-center text-muted-foreground text-sm">
+            <div className="p-6 text-center text-muted-foreground text-sm">
               No notifications yet
             </div>
           )}
         </ScrollArea>
         <DropdownMenuSeparator />
         <div className="p-2">
-          <Button variant="ghost" className="w-full text-sm text-foreground hover:text-foreground" size="sm">
+          <Button 
+            variant="ghost" 
+            className="w-full text-sm text-foreground hover:text-foreground hover:bg-accent/50" 
+            size="sm"
+            onClick={markAllAsRead}
+            disabled={unreadCount === 0}
+          >
             Mark all as read
           </Button>
         </div>
