@@ -6958,11 +6958,6 @@ export default function PCBuild() {
 
   const requireAuth = (action: () => void) => {
     if (!user) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to interact with PC build components.',
-        variant: 'destructive',
-      });
       navigate('/auth');
       return;
     }

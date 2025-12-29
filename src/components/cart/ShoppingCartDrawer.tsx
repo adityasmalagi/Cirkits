@@ -56,9 +56,19 @@ export function ShoppingCartDrawer() {
   };
 
   const buyAllOnAmazon = () => {
-    items.forEach(item => {
+    // Build Amazon cart URL with all items
+    // Amazon supports adding multiple items via a special cart URL
+    const amazonCartUrl = 'https://www.amazon.in/gp/aws/cart/add.html';
+    const params = new URLSearchParams();
+    
+    // For items without ASIN, we'll open individual search tabs
+    // For a real implementation, you'd need ASINs from the product data
+    items.forEach((item, index) => {
       if (item.product.affiliate_url) {
-        window.open(item.product.affiliate_url, '_blank');
+        // Open each item's Amazon link
+        setTimeout(() => {
+          window.open(item.product.affiliate_url, '_blank');
+        }, index * 300); // Stagger opening to avoid popup blockers
       }
     });
   };
