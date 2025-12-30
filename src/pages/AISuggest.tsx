@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Send, User, Bot, Loader2, LogIn } from 'lucide-react';
+import { Sparkles, Send, User, Bot, Loader2, LogIn, MousePointerClick } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
@@ -15,7 +15,47 @@ interface Message {
   content: string;
 }
 
+interface SuggestionOption {
+  number: string;
+  title: string;
+  fullText: string;
+}
+
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-suggest`;
+
+// Parse AI response to extract numbered options
+const parseOptions = (content: string): SuggestionOption[] => {
+  const options: SuggestionOption[] = [];
+  
+  // Match patterns like "1. **Title**" or "Option 1:" with following description
+  const lines = content.split('\n');
+  let currentOption: SuggestionOption | null = null;
+  
+  for (const line of lines) {
+    // Match numbered options: "1.", "1)", "Option 1:", "**1.**", etc.
+    const optionMatch = line.match(/^(?:\*\*)?(?:Option\s+)?(\d)[.):]\s*(?:\*\*)?\s*(.+?)(?:\*\*)?$/i);
+    
+    if (optionMatch) {
+      if (currentOption) {
+        options.push(currentOption);
+      }
+      currentOption = {
+        number: optionMatch[1],
+        title: optionMatch[2].replace(/\*\*/g, '').replace(/:$/, '').trim(),
+        fullText: `Option ${optionMatch[1]}: ${optionMatch[2].replace(/\*\*/g, '').trim()}`,
+      };
+    } else if (currentOption && line.trim() && !line.match(/^(?:\*\*)?(?:Option\s+)?\d[.):]/)) {
+      // Append description lines to current option
+      currentOption.fullText += ' ' + line.trim();
+    }
+  }
+  
+  if (currentOption) {
+    options.push(currentOption);
+  }
+  
+  return options.slice(0, 4); // Max 4 options
+};
 
 export default function AISuggest() {
   const { user, isLoading: authLoading } = useAuth();
@@ -30,10 +70,11 @@ export default function AISuggest() {
     }
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (messageText?: string) => {
+    const textToSend = messageText || input.trim();
+    if (!textToSend || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: input.trim() };
+    const userMessage: Message = { role: 'user', content: textToSend };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -126,6 +167,21 @@ export default function AISuggest() {
       sendMessage();
     }
   };
+
+  const handleOptionClick = (optionText: string) => {
+    sendMessage(`I choose ${optionText}. Please give me more details about this option.`);
+  };
+
+  // Get the last assistant message to check for options
+  const lastAssistantMessage = useMemo(() => {
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    return assistantMessages[assistantMessages.length - 1];
+  }, [messages]);
+
+  const parsedOptions = useMemo(() => {
+    if (!lastAssistantMessage || isLoading) return [];
+    return parseOptions(lastAssistantMessage.content);
+  }, [lastAssistantMessage, isLoading]);
 
   return (
     <Layout>
@@ -225,6 +281,37 @@ export default function AISuggest() {
                     )}
                   </div>
                 ))}
+                
+                {/* Clickable option buttons after last assistant message */}
+                {parsedOptions.length > 0 && !isLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 flex-shrink-0" /> {/* Spacer for alignment */}
+                    <div className="space-y-2 w-full max-w-[80%]">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                        <MousePointerClick className="h-3 w-3" />
+                        Click an option to learn more
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {parsedOptions.map((option) => (
+                          <Button
+                            key={option.number}
+                            variant="outline"
+                            size="sm"
+                            className="text-left h-auto py-3 px-4 justify-start hover:bg-primary/10 hover:border-primary transition-colors"
+                            onClick={() => handleOptionClick(option.title)}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold flex items-center justify-center">
+                                {option.number}
+                              </span>
+                              <span className="text-sm font-medium line-clamp-2">{option.title}</span>
+                            </span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>
@@ -240,7 +327,7 @@ export default function AISuggest() {
                 disabled={isLoading}
               />
               <Button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!input.trim() || isLoading || !user}
                 className="gradient-primary text-primary-foreground px-4"
               >
