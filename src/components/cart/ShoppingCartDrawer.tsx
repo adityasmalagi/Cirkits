@@ -56,19 +56,28 @@ export function ShoppingCartDrawer() {
   };
 
   const buyAllOnAmazon = () => {
-    // Build Amazon cart URL with all items
-    // Amazon supports adding multiple items via a special cart URL
-    const amazonCartUrl = 'https://www.amazon.in/gp/aws/cart/add.html';
-    const params = new URLSearchParams();
+    // Check if any items have ASINs for direct cart add
+    const itemsWithAsin = items.filter(item => (item.product as any).amazon_asin);
+    const itemsWithoutAsin = items.filter(item => !(item.product as any).amazon_asin);
     
-    // For items without ASIN, we'll open individual search tabs
-    // For a real implementation, you'd need ASINs from the product data
-    items.forEach((item, index) => {
+    if (itemsWithAsin.length > 0) {
+      // Build Amazon cart URL with all ASIN items
+      const params = new URLSearchParams();
+      itemsWithAsin.forEach((item, index) => {
+        params.append(`ASIN.${index + 1}`, (item.product as any).amazon_asin);
+        params.append(`Quantity.${index + 1}`, item.quantity.toString());
+      });
+      
+      const amazonCartUrl = `https://www.amazon.in/gp/aws/cart/add.html?${params.toString()}`;
+      window.open(amazonCartUrl, '_blank');
+    }
+    
+    // For items without ASIN, open individual affiliate links with stagger
+    itemsWithoutAsin.forEach((item, index) => {
       if (item.product.affiliate_url) {
-        // Open each item's Amazon link
         setTimeout(() => {
           window.open(item.product.affiliate_url, '_blank');
-        }, index * 300); // Stagger opening to avoid popup blockers
+        }, (itemsWithAsin.length > 0 ? 500 : 0) + index * 300);
       }
     });
   };
@@ -272,7 +281,7 @@ export function ShoppingCartDrawer() {
               </div>
 
               <p className="text-xs text-muted-foreground text-center">
-                Each item opens in a new Amazon tab
+                Items with ASIN are added to one cart, others open in new tabs
               </p>
             </div>
           </>

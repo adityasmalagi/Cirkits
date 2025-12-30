@@ -133,10 +133,41 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           affiliate_source: string | null
           affiliate_url: string | null
+          amazon_asin: string | null
           category_id: string | null
           created_at: string
           description: string | null
@@ -150,6 +181,7 @@ export type Database = {
         Insert: {
           affiliate_source?: string | null
           affiliate_url?: string | null
+          amazon_asin?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -163,6 +195,7 @@ export type Database = {
         Update: {
           affiliate_source?: string | null
           affiliate_url?: string | null
+          amazon_asin?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
