@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { supabase } from '@/integrations/supabase/client';
 import { Cpu, Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
-
+import { signInSchema, signUpSchema, forgotPasswordSchema } from '@/lib/validations';
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'signup' ? 'signup' : 'signin';
@@ -80,18 +80,33 @@ export default function Auth() {
       return;
     }
     
-    setIsLoading(true);
     const formData = new FormData(e.currentTarget);
-    const { error } = await signIn(formData.get('email') as string, formData.get('password') as string);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    // Validate input with zod
+    const result = signInSchema.safeParse({ email, password });
+    if (!result.success) {
+      const firstError = result.error.errors[0];
+      toast({ 
+        title: 'Validation Error', 
+        description: firstError.message, 
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    const { error } = await signIn(result.data.email, result.data.password);
     setIsLoading(false);
     
     if (error) {
       // Record failed attempt
-      const result = recordAttempt(false);
-      if (result.remainingAttempts > 0) {
+      const attemptResult = recordAttempt(false);
+      if (attemptResult.remainingAttempts > 0) {
         toast({ 
           title: 'Error', 
-          description: `${error.message} (${result.remainingAttempts} attempts remaining)`, 
+          description: `${error.message} (${attemptResult.remainingAttempts} attempts remaining)`, 
           variant: 'destructive' 
         });
       } else {
@@ -110,9 +125,26 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    
     const formData = new FormData(e.currentTarget);
-    const { error } = await signUp(formData.get('email') as string, formData.get('password') as string, formData.get('name') as string);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    // Validate input with zod
+    const result = signUpSchema.safeParse({ name, email, password });
+    if (!result.success) {
+      const firstError = result.error.errors[0];
+      toast({ 
+        title: 'Validation Error', 
+        description: firstError.message, 
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    const { error } = await signUp(result.data.email, result.data.password, result.data.name);
     setIsLoading(false);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -138,11 +170,24 @@ export default function Auth() {
 
   const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    // Validate input with zod
+    const result = forgotPasswordSchema.safeParse({ email });
+    if (!result.success) {
+      const firstError = result.error.errors[0];
+      toast({ 
+        title: 'Validation Error', 
+        description: firstError.message, 
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(result.data.email, {
       redirectTo: `${window.location.origin}/auth?tab=signin`,
     });
     
