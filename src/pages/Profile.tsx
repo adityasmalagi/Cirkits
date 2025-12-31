@@ -16,6 +16,7 @@ import { User, Mail, Phone, MapPin, FileText, Save, ArrowLeft, Edit, Trash2, Fol
 import { Layout } from '@/components/layout/Layout';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
+import { profileSchema } from '@/lib/validations';
 
 interface Profile {
   id: string;
@@ -150,8 +151,17 @@ export default function Profile() {
   const handleSave = async () => {
     if (!user) return;
 
-    if (!validatePhoneNumber(phoneNumber)) {
-      toast.error('Please enter a valid phone number');
+    // Validate all fields with zod
+    const result = profileSchema.safeParse({
+      displayName: displayName || null,
+      phoneNumber: phoneNumber || null,
+      bio: bio || null,
+      location: location || null,
+    });
+
+    if (!result.success) {
+      const firstError = result.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -160,10 +170,10 @@ export default function Profile() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          display_name: displayName || null,
-          phone_number: phoneNumber || null,
-          bio: bio || null,
-          location: location || null,
+          display_name: result.data.displayName || null,
+          phone_number: result.data.phoneNumber || null,
+          bio: result.data.bio || null,
+          location: result.data.location || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);

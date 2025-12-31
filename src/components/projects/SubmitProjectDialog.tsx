@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Plus, Trash2, Send, Package } from 'lucide-react';
 import { Category, DifficultyLevel } from '@/types/database';
+import { projectSubmissionSchema } from '@/lib/validations';
 
 interface ProjectPart {
   name: string;
@@ -104,20 +105,32 @@ export function SubmitProjectDialog() {
       return;
     }
 
-    if (!title.trim()) {
-      toast({
-        title: 'Title required',
-        description: 'Please enter a project title.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // Prepare parts for validation
+    const validParts = parts.filter(p => p.name.trim()).map(p => ({
+      name: p.name.trim(),
+      description: p.description.trim() || undefined,
+      price: p.price || undefined,
+      quantity: p.quantity || undefined,
+      affiliate_url: p.affiliate_url.trim() || undefined,
+    }));
 
-    const validParts = parts.filter(p => p.name.trim());
-    if (validParts.length === 0) {
+    // Validate all input with zod
+    const result = projectSubmissionSchema.safeParse({
+      title: title.trim(),
+      description: description.trim() || undefined,
+      categoryId: categoryId || undefined,
+      difficulty,
+      estimatedCost: estimatedCost || undefined,
+      estimatedTime: estimatedTime.trim() || undefined,
+      imageUrl: imageUrl.trim() || undefined,
+      parts: validParts.length > 0 ? validParts : [{ name: '' }], // Trigger validation error
+    });
+
+    if (!result.success) {
+      const firstError = result.error.errors[0];
       toast({
-        title: 'Components required',
-        description: 'Please add at least one component.',
+        title: 'Validation Error',
+        description: firstError.message,
         variant: 'destructive',
       });
       return;
@@ -126,18 +139,18 @@ export function SubmitProjectDialog() {
     setIsSubmitting(true);
 
     try {
-      // Insert the project
+      // Insert the project with validated data
       const { data: project, error: projectError } = await supabase
         .from('user_projects')
         .insert({
           user_id: user.id,
-          title: title.trim(),
-          description: description.trim() || null,
-          category_id: categoryId || null,
-          difficulty,
-          estimated_cost: estimatedCost ? parseFloat(estimatedCost) : null,
-          estimated_time: estimatedTime.trim() || null,
-          image_url: imageUrl.trim() || null,
+          title: result.data.title,
+          description: result.data.description || null,
+          category_id: result.data.categoryId || null,
+          difficulty: result.data.difficulty,
+          estimated_cost: result.data.estimatedCost ? parseFloat(result.data.estimatedCost) : null,
+          estimated_time: result.data.estimatedTime || null,
+          image_url: result.data.imageUrl || null,
           status: 'pending',
         })
         .select()
@@ -145,14 +158,14 @@ export function SubmitProjectDialog() {
 
       if (projectError) throw projectError;
 
-      // Insert the parts
-      const partsToInsert = validParts.map(part => ({
+      // Insert the parts with validated data
+      const partsToInsert = result.data.parts.map(part => ({
         user_project_id: project.id,
-        name: part.name.trim(),
-        description: part.description.trim() || null,
+        name: part.name,
+        description: part.description || null,
         price: part.price ? parseFloat(part.price) : null,
-        quantity: parseInt(part.quantity) || 1,
-        affiliate_url: part.affiliate_url.trim() || null,
+        quantity: part.quantity ? parseInt(part.quantity) : 1,
+        affiliate_url: part.affiliate_url || null,
       }));
 
       const { error: partsError } = await supabase

@@ -6,6 +6,48 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation schema (inline to avoid import issues in edge functions)
+function validateMessages(messages: unknown): { valid: boolean; error?: string; data?: Array<{ role: string; content: string }> } {
+  if (!Array.isArray(messages)) {
+    return { valid: false, error: 'Messages must be an array' };
+  }
+  
+  if (messages.length === 0) {
+    return { valid: false, error: 'At least one message is required' };
+  }
+  
+  if (messages.length > 50) {
+    return { valid: false, error: 'Too many messages (max 50)' };
+  }
+  
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    if (typeof msg !== 'object' || msg === null) {
+      return { valid: false, error: `Message ${i + 1} is invalid` };
+    }
+    
+    const { role, content } = msg as { role?: unknown; content?: unknown };
+    
+    if (!role || typeof role !== 'string' || !['user', 'assistant', 'system'].includes(role)) {
+      return { valid: false, error: `Message ${i + 1} has invalid role` };
+    }
+    
+    if (!content || typeof content !== 'string') {
+      return { valid: false, error: `Message ${i + 1} has invalid content` };
+    }
+    
+    if (content.length === 0) {
+      return { valid: false, error: `Message ${i + 1} content is empty` };
+    }
+    
+    if (content.length > 10000) {
+      return { valid: false, error: `Message ${i + 1} content is too long (max 10000 characters)` };
+    }
+  }
+  
+  return { valid: true, data: messages as Array<{ role: string; content: string }> };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -39,14 +81,36 @@ serve(async (req) => {
       );
     }
 
-    const { messages } = await req.json();
+    // Parse and validate request body
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { messages } = body;
+    
+    // Validate messages input
+    const validation = validateMessages(messages);
+    if (!validation.valid) {
+      console.error("Validation failed:", validation.error);
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("AI Suggest request from user:", user.id, "with", messages.length, "messages");
+    console.log("AI Suggest request from user:", user.id, "with", validation.data!.length, "messages");
 
     const systemPrompt = `You are Cirkit AI, an expert hardware recommendation assistant inspired by platforms like Engineers Planet. You help students and hobbyists find the perfect hardware projects, PC builds, and components for their learning journey.
 
@@ -102,7 +166,7 @@ Always provide prices in Indian Rupees (₹). Be friendly and encouraging. If th
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          ...messages,
+          ...validation.data!,
         ],
         stream: true,
       }),
