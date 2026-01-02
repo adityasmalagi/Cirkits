@@ -11,8 +11,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { supabase } from '@/integrations/supabase/client';
-import { Cpu, Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
 import { signInSchema, signUpSchema, forgotPasswordSchema } from '@/lib/validations';
+import cirkitLogo from '@/assets/cirkit-logo.png';
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'signup' ? 'signup' : 'signin';
@@ -208,8 +209,8 @@ export default function Auth() {
       <div className="container flex items-center justify-center min-h-[70vh] py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto h-12 w-12 rounded-xl gradient-primary flex items-center justify-center mb-4">
-              <Cpu className="h-6 w-6 text-primary-foreground" />
+            <div className="mx-auto mb-4">
+              <img src={cirkitLogo} alt="Cirkit" className="h-12 w-auto" />
             </div>
             <CardTitle>Welcome to Cirkit</CardTitle>
             <CardDescription>
