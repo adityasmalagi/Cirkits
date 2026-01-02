@@ -74,7 +74,7 @@ export function Navbar() {
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center flex-shrink-0">
-          <img src={cirkitLogo} alt="Cirkit" className="h-8 md:h-10 w-auto logo-adaptive" />
+          <img src={cirkitLogo} alt="Cirkit" className="h-10 md:h-12 w-auto rounded-lg object-contain" />
         </Link>
 
         {/* Desktop Navigation */}
