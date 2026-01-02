@@ -10,7 +10,7 @@ export function Footer() {
           {/* Logo and Description */}
           <div className="space-y-4 text-center">
             <Link to="/" className="inline-flex items-center">
-              <img src={cirkitLogo} alt="Cirkit" className="h-12 w-auto" />
+              <img src={cirkitLogo} alt="Cirkit" className="h-12 w-auto rounded-lg dark:bg-white/90 dark:p-1" />
             </Link>
             <p className="text-muted-foreground text-sm max-w-md">
               Your one-stop platform for hardware projects, PC builds, and AI-powered recommendations.
