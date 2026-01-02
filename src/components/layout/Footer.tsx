@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Cpu, Github, Twitter, Linkedin } from 'lucide-react';
+import { Github, Twitter, Linkedin } from 'lucide-react';
+import cirkitLogo from '@/assets/cirkit-logo.png';
 
 export function Footer() {
   return (
@@ -8,11 +9,8 @@ export function Footer() {
         <div className="flex flex-col items-center gap-6">
           {/* Logo and Description */}
           <div className="space-y-4 text-center">
-            <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl">
-              <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
-                <Cpu className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-gradient">Cirkit</span>
+            <Link to="/" className="inline-flex items-center">
+              <img src={cirkitLogo} alt="Cirkit" className="h-12 w-auto" />
             </Link>
             <p className="text-muted-foreground text-sm max-w-md">
               Your one-stop platform for hardware projects, PC builds, and AI-powered recommendations.
