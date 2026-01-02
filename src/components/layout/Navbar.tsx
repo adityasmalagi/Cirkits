@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart, UserCircle, Folder, Moon, Sun, Bell } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import cirkitLogo from '@/assets/cirkit-logo.png';
 
 const navLinks = [
   { name: 'Home', href: '/', icon: Home },
@@ -72,11 +73,8 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full glass">
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg md:text-xl flex-shrink-0">
-          <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg gradient-primary flex items-center justify-center">
-            <Cpu className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
-          </div>
-          <span className="text-gradient">Cirkit</span>
+        <Link to="/" className="flex items-center flex-shrink-0">
+          <img src={cirkitLogo} alt="Cirkit" className="h-8 md:h-10 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}
