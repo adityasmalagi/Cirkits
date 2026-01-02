@@ -118,15 +118,6 @@
     @apply bg-background text-foreground font-sans antialiased transition-colors duration-300;
     font-feature-settings: "cv11", "ss01";
   }
-
-  /* Logo dark mode filter for seamless display */
-  .logo-adaptive {
-    @apply transition-all duration-300;
-  }
-
-  .dark .logo-adaptive {
-    filter: brightness(0) invert(1);
-  }
 }
 
 @layer utilities {

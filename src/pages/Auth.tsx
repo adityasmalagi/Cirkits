@@ -210,7 +210,7 @@ export default function Auth() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4">
-              <img src={cirkitLogo} alt="Cirkit" className="h-12 w-auto logo-adaptive" />
+              <img src={cirkitLogo} alt="Cirkit" className="h-16 w-auto rounded-lg object-contain" />
             </div>
             <CardTitle>Welcome to Cirkit</CardTitle>
             <CardDescription>
