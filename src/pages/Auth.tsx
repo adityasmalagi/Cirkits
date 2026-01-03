@@ -13,7 +13,7 @@ import { useRateLimit } from '@/hooks/useRateLimit';
 import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
 import { signInSchema, signUpSchema, forgotPasswordSchema } from '@/lib/validations';
-import cirkitLogo from '@/assets/cirkit-logo.png';
+import cirkitLogo from '@/assets/cirkits-logo.png';
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'signup' ? 'signup' : 'signin';

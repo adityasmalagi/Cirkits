@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart, UserCircle, Folder, Moon, Sun, Bell } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import cirkitLogo from '@/assets/cirkit-logo.png';
+import cirkitLogo from '@/assets/cirkits-logo.png';
 
 const navLinks = [
   { name: 'Home', href: '/', icon: Home },

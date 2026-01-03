@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Github, Twitter, Linkedin } from 'lucide-react';
-import cirkitLogo from '@/assets/cirkit-logo.png';
+import cirkitLogo from '@/assets/cirkits-logo.png';
 
 export function Footer() {
   return (
