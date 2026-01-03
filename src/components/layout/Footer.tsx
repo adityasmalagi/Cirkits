@@ -21,13 +21,13 @@ export function Footer() {
           <div className="text-center">
             <h4 className="font-semibold mb-4">Connect</h4>
             <div className="flex gap-4 justify-center">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2">
+              <a href="https://github.com/adityasmalagi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2">
                 <Github className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2">
+              <a href="https://x.com/techwithadi_" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2">
+              <a href="https://www.linkedin.com/in/aditya-s-malagi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2">
                 <Linkedin className="h-5 w-5" />
               </a>
             </div>
