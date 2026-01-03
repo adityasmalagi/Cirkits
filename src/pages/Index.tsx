@@ -58,21 +58,17 @@ export default function Index() {
   });
 
   const { data: featuredProjects, isLoading: projectsLoading } = useQuery({
-    queryKey: ['home-projects', Date.now()], // Force refresh on each mount
+    queryKey: ['featured-projects'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
         .select('*, category:categories(*), project_parts(*, product:products(*))')
-        .order('created_at', { ascending: false });
+        .eq('featured', true)
+        .order('created_at', { ascending: false })
+        .limit(4);
       if (error) throw error;
-      
-      // Shuffle and pick 4 random projects
-      const shuffled = (data as (Project & { category: Category })[])
-        .sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, 4);
+      return data as (Project & { category: Category })[];
     },
-    staleTime: 0, // Always refetch on mount
-    gcTime: 0, // Don't cache
   });
 
   return (
