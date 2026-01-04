@@ -228,16 +228,20 @@ export function Navbar() {
                         <p className="font-medium text-sm">{displayName || user.email?.split('@')[0]}</p>
                       </div>
                     </div>
+                    {/* Navigation Links */}
+                    {navLinks.map((link) => (
+                      <DropdownMenuItem key={link.href} asChild>
+                        <Link to={link.href} className="flex items-center gap-2 cursor-pointer">
+                          <link.icon className="h-4 w-4" />
+                          {link.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
                         <UserCircle className="h-4 w-4" />
                         Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/" className="flex items-center gap-2 cursor-pointer">
-                        <Home className="h-4 w-4" />
-                        Home
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -264,11 +268,12 @@ export function Navbar() {
                       </>
                     )}
                     <DropdownMenuSeparator />
+                    {/* Theme Toggle - Prominent in mobile */}
                     <DropdownMenuItem 
-                      className="flex items-center gap-2 cursor-pointer"
+                      className="flex items-center gap-2 cursor-pointer font-medium"
                       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                     >
-                      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                      {theme === 'dark' ? <Sun className="h-4 w-4 text-tech-orange" /> : <Moon className="h-4 w-4 text-tech-purple" />}
                       {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -286,6 +291,16 @@ export function Navbar() {
                       <p className="font-medium text-sm">Welcome to Cirkit</p>
                       <p className="text-xs text-muted-foreground">Sign in to access all features</p>
                     </div>
+                    {/* Navigation Links for non-logged users */}
+                    {navLinks.map((link) => (
+                      <DropdownMenuItem key={link.href} asChild>
+                        <Link to={link.href} className="flex items-center gap-2 cursor-pointer">
+                          <link.icon className="h-4 w-4" />
+                          {link.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/auth" className="flex items-center gap-2 cursor-pointer">
                         <User className="h-4 w-4" />
@@ -300,10 +315,10 @@ export function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      className="flex items-center gap-2 cursor-pointer"
+                      className="flex items-center gap-2 cursor-pointer font-medium"
                       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                     >
-                      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                      {theme === 'dark' ? <Sun className="h-4 w-4 text-tech-orange" /> : <Moon className="h-4 w-4 text-tech-purple" />}
                       {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                     </DropdownMenuItem>
                   </>
