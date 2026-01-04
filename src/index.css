@@ -117,6 +117,29 @@
   body {
     @apply bg-background text-foreground font-sans antialiased transition-colors duration-300;
     font-feature-settings: "cv11", "ss01";
+    /* Smaller base font on mobile */
+    @apply text-sm md:text-base;
+  }
+
+  /* Mobile typography adjustments */
+  h1 {
+    @apply text-2xl md:text-4xl;
+  }
+  
+  h2 {
+    @apply text-xl md:text-3xl;
+  }
+  
+  h3 {
+    @apply text-lg md:text-2xl;
+  }
+  
+  h4 {
+    @apply text-base md:text-xl;
+  }
+  
+  p {
+    @apply text-sm md:text-base;
   }
 }
 
