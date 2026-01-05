@@ -108,7 +108,21 @@ export function Navbar() {
             )}
           </Button>
 
-          {/* Theme Toggle - Hidden on mobile, shown in menu */}
+          {/* Theme Toggle - Visible on mobile beside cart */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 md:hidden"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 text-tech-orange" />
+            ) : (
+              <Moon className="h-4 w-4 text-tech-purple" />
+            )}
+          </Button>
+
+          {/* Theme Toggle - Desktop */}
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
