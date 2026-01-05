@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { PullToRefresh } from '@/components/layout/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/categories/CategoryCard';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Sparkles, Cpu, Zap, ChevronRight, CircuitBoard, Wrench, Bot, Shield, Headphones, Upload, Monitor } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
-
+import { useIsMobile } from '@/hooks/use-mobile';
 const services = [
   {
     icon: CircuitBoard,
@@ -44,6 +45,8 @@ const services = [
 ];
 
 export default function Index() {
+  const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
@@ -71,8 +74,15 @@ export default function Index() {
     },
   });
 
-  return (
-    <Layout>
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['categories'] }),
+      queryClient.invalidateQueries({ queryKey: ['featured-projects'] }),
+    ]);
+  };
+
+  const content = (
+    <>
       {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[70vh] md:min-h-[90vh] flex items-center">
         {/* Animated background gradients */}
@@ -306,6 +316,18 @@ export default function Index() {
           </div>
         </div>
       </section>
+    </>
+  );
+
+  return (
+    <Layout>
+      {isMobile ? (
+        <PullToRefresh onRefresh={handleRefresh}>
+          {content}
+        </PullToRefresh>
+      ) : (
+        content
+      )}
     </Layout>
   );
 }
