@@ -7,16 +7,46 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+
+  const iconVariants = {
+    initial: { scale: 0, rotate: -180, opacity: 0 },
+    animate: { scale: 1, rotate: 0, opacity: 1 },
+    exit: { scale: 0, rotate: 180, opacity: 0 },
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <Button variant="ghost" size="icon" className="relative overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            {resolvedTheme === 'dark' ? (
+              <motion.div
+                key="moon"
+                variants={iconVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+              >
+                <Moon className="h-5 w-5 text-tech-purple" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="sun"
+                variants={iconVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+              >
+                <Sun className="h-5 w-5 text-tech-orange" />
+              </motion.div>
+            )}
+          </AnimatePresence>
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
@@ -25,7 +55,7 @@ export function ThemeToggle() {
           onClick={() => setTheme('light')}
           className="flex items-center gap-2 cursor-pointer"
         >
-          <Sun className="h-4 w-4" />
+          <Sun className="h-4 w-4 text-tech-orange" />
           Light
           {theme === 'light' && <span className="ml-auto text-primary">✓</span>}
         </DropdownMenuItem>
@@ -33,7 +63,7 @@ export function ThemeToggle() {
           onClick={() => setTheme('dark')}
           className="flex items-center gap-2 cursor-pointer"
         >
-          <Moon className="h-4 w-4" />
+          <Moon className="h-4 w-4 text-tech-purple" />
           Dark
           {theme === 'dark' && <span className="ml-auto text-primary">✓</span>}
         </DropdownMenuItem>
