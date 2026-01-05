@@ -96,6 +96,9 @@ export default {
           "0%, 100%": { boxShadow: "0 0 20px hsl(217 91% 60% / 0.3)" },
           "50%": { boxShadow: "0 0 30px hsl(217 91% 60% / 0.5)" },
         },
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -103,6 +106,7 @@ export default {
         "fade-in": "fade-in 0.5s ease-out",
         "slide-in": "slide-in 0.3s ease-out",
         "pulse-glow": "pulse-glow 2s infinite",
+        shimmer: "shimmer 2s infinite",
       },
     },
   },
