@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { Monitor, Cpu, Sparkles, User, LogOut, Settings, Heart, Menu, X, Home, ShoppingCart, UserCircle, Folder, Moon, Sun, Bell } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
 import cirkitLogo from '@/assets/cirkits-logo.png';
 
 const navLinks = [
@@ -112,14 +113,32 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 md:hidden"
+            className="h-9 w-9 md:hidden relative overflow-hidden"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4 text-tech-orange" />
-            ) : (
-              <Moon className="h-4 w-4 text-tech-purple" />
-            )}
+            <AnimatePresence mode="wait" initial={false}>
+              {theme === 'dark' ? (
+                <motion.div
+                  key="sun"
+                  initial={{ scale: 0, rotate: -180, opacity: 0 }}
+                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                  exit={{ scale: 0, rotate: 180, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                >
+                  <Sun className="h-4 w-4 text-tech-orange" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="moon"
+                  initial={{ scale: 0, rotate: -180, opacity: 0 }}
+                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                  exit={{ scale: 0, rotate: 180, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                >
+                  <Moon className="h-4 w-4 text-tech-purple" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Button>
 
           {/* Theme Toggle - Desktop */}
