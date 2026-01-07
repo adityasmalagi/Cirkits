@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, IndianRupee } from 'lucide-react';
+import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, DifficultyLevel } from '@/types/database';
@@ -19,10 +19,17 @@ import { cn } from '@/lib/utils';
 type BudgetRange = 'all' | 'under1000' | '1000to5000' | 'above5000';
 
 const budgetRanges = [
-  { id: 'all' as BudgetRange, label: 'All Budgets', range: '₹0 - ∞' },
-  { id: 'under1000' as BudgetRange, label: 'Under ₹1,000', range: '≤₹1K' },
+  { id: 'all' as BudgetRange, label: 'All Budgets', range: 'All' },
+  { id: 'under1000' as BudgetRange, label: 'Under ₹1,000', range: '< ₹1K' },
   { id: '1000to5000' as BudgetRange, label: '₹1,000 - ₹5,000', range: '₹1K-5K' },
-  { id: 'above5000' as BudgetRange, label: 'Above ₹5,000', range: '₹5K+' },
+  { id: 'above5000' as BudgetRange, label: 'Above ₹5,000', range: '> ₹5K' },
+];
+
+const difficultyLevels = [
+  { id: 'all', label: 'All Levels', icon: null, color: '' },
+  { id: 'beginner', label: 'Beginner', icon: Zap, color: 'text-green-500 bg-green-500/10 border-green-500/30 hover:bg-green-500/20' },
+  { id: 'intermediate', label: 'Intermediate', icon: Gauge, color: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20' },
+  { id: 'advanced', label: 'Advanced', icon: Rocket, color: 'text-red-500 bg-red-500/10 border-red-500/30 hover:bg-red-500/20' },
 ];
 
 export default function Projects() {
@@ -169,9 +176,49 @@ export default function Projects() {
           </p>
         </div>
 
+        {/* Difficulty Filter - Visual buttons */}
+        <div className="mb-4 md:mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs md:text-sm font-medium text-muted-foreground flex-shrink-0">
+              Difficulty:
+            </span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 md:flex-wrap scrollbar-hide">
+            {difficultyLevels.map((level) => {
+              const isActive = (level.id === 'all' && !difficultyFilter) || difficultyFilter === level.id;
+              const Icon = level.icon;
+              return (
+                <Button
+                  key={level.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newParams = new URLSearchParams(searchParams);
+                    if (level.id === 'all') {
+                      newParams.delete('difficulty');
+                    } else {
+                      newParams.set('difficulty', level.id);
+                    }
+                    setSearchParams(newParams);
+                  }}
+                  className={cn(
+                    'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px] gap-1.5 border transition-all',
+                    isActive && level.id !== 'all' && level.color,
+                    isActive && level.id === 'all' && 'bg-primary text-primary-foreground border-primary',
+                    !isActive && 'hover:bg-muted'
+                  )}
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5" />}
+                  {level.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Budget Filter Buttons - Horizontal scroll on mobile */}
         <div className="mb-4 md:mb-6">
-          <div className="flex items-center gap-2 mb-2 md:mb-0">
+          <div className="flex items-center gap-2 mb-2">
             <span className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1 flex-shrink-0">
               <IndianRupee className="h-3 w-3 md:h-4 md:w-4" />
               Budget:
@@ -185,7 +232,7 @@ export default function Projects() {
                 size="sm"
                 onClick={() => setBudgetFilter(range.id)}
                 className={cn(
-                  'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px]',
+                  'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px] transition-all',
                   budgetFilter === range.id && 'gradient-primary text-primary-foreground'
                 )}
               >
@@ -196,7 +243,7 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Search and Category Filter */}
         <div className="space-y-3 md:space-y-0 md:flex md:flex-row md:gap-4 mb-6 md:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -208,7 +255,7 @@ export default function Projects() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2 md:flex md:gap-4">
+          <div className="flex gap-2 md:gap-4">
             <Select
               value={categoryFilter || 'all'}
               onValueChange={(value) => {
@@ -221,7 +268,7 @@ export default function Projects() {
                 setSearchParams(newParams);
               }}
             >
-              <SelectTrigger className="w-full md:w-40 h-10 md:h-9 text-sm">
+              <SelectTrigger className="flex-1 md:w-40 h-10 md:h-9 text-sm">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -234,36 +281,13 @@ export default function Projects() {
               </SelectContent>
             </Select>
 
-            <Select
-              value={difficultyFilter || 'all'}
-              onValueChange={(value) => {
-                const newParams = new URLSearchParams(searchParams);
-                if (value === 'all') {
-                  newParams.delete('difficulty');
-                } else {
-                  newParams.set('difficulty', value);
-                }
-                setSearchParams(newParams);
-              }}
-            >
-              <SelectTrigger className="w-full md:w-36 h-10 md:h-9 text-sm">
-                <SelectValue placeholder="Difficulty" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
+            {hasFilters && (
+              <Button variant="ghost" onClick={clearFilters} className="gap-2 h-10 md:h-9">
+                <X className="h-4 w-4" />
+                <span className="hidden sm:inline">Clear All</span>
+              </Button>
+            )}
           </div>
-
-          {hasFilters && (
-            <Button variant="ghost" onClick={clearFilters} className="gap-2 h-10 md:h-9 w-full md:w-auto">
-              <X className="h-4 w-4" />
-              Clear All
-            </Button>
-          )}
         </div>
 
         {/* Active filters */}
@@ -283,7 +307,18 @@ export default function Projects() {
               </Badge>
             )}
             {difficultyFilter && (
-              <Badge variant="secondary" className="gap-1">
+              <Badge 
+                variant="secondary" 
+                className={cn(
+                  "gap-1 capitalize",
+                  difficultyFilter === 'beginner' && 'bg-green-500/10 text-green-600 border-green-500/30',
+                  difficultyFilter === 'intermediate' && 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
+                  difficultyFilter === 'advanced' && 'bg-red-500/10 text-red-600 border-red-500/30'
+                )}
+              >
+                {difficultyFilter === 'beginner' && <Zap className="h-3 w-3" />}
+                {difficultyFilter === 'intermediate' && <Gauge className="h-3 w-3" />}
+                {difficultyFilter === 'advanced' && <Rocket className="h-3 w-3" />}
                 {difficultyFilter}
                 <X
                   className="h-3 w-3 cursor-pointer"
@@ -297,6 +332,7 @@ export default function Projects() {
             )}
             {budgetFilter !== 'all' && (
               <Badge variant="secondary" className="gap-1">
+                <IndianRupee className="h-3 w-3" />
                 {budgetRanges.find(b => b.id === budgetFilter)?.label}
                 <X
                   className="h-3 w-3 cursor-pointer"
