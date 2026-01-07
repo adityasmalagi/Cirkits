@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket } from 'lucide-react';
+import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket, ArrowUpDown, ArrowUp, ArrowDown, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, DifficultyLevel } from '@/types/database';
@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 type BudgetRange = 'all' | 'under1000' | '1000to5000' | 'above5000';
+type SortOption = 'newest' | 'price-low' | 'price-high' | 'difficulty-asc' | 'difficulty-desc';
 
 const budgetRanges = [
   { id: 'all' as BudgetRange, label: 'All Budgets', range: 'All' },
@@ -32,10 +33,21 @@ const difficultyLevels = [
   { id: 'advanced', label: 'Advanced', icon: Rocket, color: 'text-red-500 bg-red-500/10 border-red-500/30 hover:bg-red-500/20' },
 ];
 
+const sortOptions = [
+  { id: 'newest' as SortOption, label: 'Newest First', icon: Clock },
+  { id: 'price-low' as SortOption, label: 'Price: Low to High', icon: ArrowUp },
+  { id: 'price-high' as SortOption, label: 'Price: High to Low', icon: ArrowDown },
+  { id: 'difficulty-asc' as SortOption, label: 'Difficulty: Easy First', icon: Zap },
+  { id: 'difficulty-desc' as SortOption, label: 'Difficulty: Hard First', icon: Rocket },
+];
+
+const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 };
+
 export default function Projects() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [budgetFilter, setBudgetFilter] = useState<BudgetRange>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -53,6 +65,47 @@ export default function Projects() {
       return data as Category[];
     },
   });
+
+  // Fetch ALL projects for counting (without filters)
+  const { data: allProjects } = useQuery({
+    queryKey: ['all-projects-for-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, difficulty, estimated_cost, category_id');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Calculate counts for filters
+  const filterCounts = useMemo(() => {
+    if (!allProjects) return { difficulty: {}, budget: {}, category: {} };
+
+    const difficulty: Record<string, number> = { all: allProjects.length, beginner: 0, intermediate: 0, advanced: 0 };
+    const budget: Record<string, number> = { all: allProjects.length, under1000: 0, '1000to5000': 0, above5000: 0 };
+    const category: Record<string, number> = {};
+
+    allProjects.forEach(p => {
+      // Difficulty counts
+      if (p.difficulty) {
+        difficulty[p.difficulty] = (difficulty[p.difficulty] || 0) + 1;
+      }
+      
+      // Budget counts
+      const cost = p.estimated_cost || 0;
+      if (cost < 1000) budget.under1000++;
+      else if (cost <= 5000) budget['1000to5000']++;
+      else budget.above5000++;
+
+      // Category counts
+      if (p.category_id) {
+        category[p.category_id] = (category[p.category_id] || 0) + 1;
+      }
+    });
+
+    return { difficulty, budget, category };
+  }, [allProjects]);
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects', categoryFilter, difficultyFilter, search],
@@ -83,11 +136,11 @@ export default function Projects() {
     enabled: !!categories,
   });
 
-  // Filter projects by budget on the client side
+  // Filter and sort projects
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
     
-    return projects.filter(project => {
+    let result = projects.filter(project => {
       const cost = project.estimated_cost || 0;
       switch (budgetFilter) {
         case 'under1000':
@@ -100,7 +153,26 @@ export default function Projects() {
           return true;
       }
     });
-  }, [projects, budgetFilter]);
+
+    // Sort projects
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return (a.estimated_cost || 0) - (b.estimated_cost || 0);
+        case 'price-high':
+          return (b.estimated_cost || 0) - (a.estimated_cost || 0);
+        case 'difficulty-asc':
+          return (difficultyOrder[a.difficulty] || 0) - (difficultyOrder[b.difficulty] || 0);
+        case 'difficulty-desc':
+          return (difficultyOrder[b.difficulty] || 0) - (difficultyOrder[a.difficulty] || 0);
+        case 'newest':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+
+    return result;
+  }, [projects, budgetFilter, sortBy]);
 
   const { data: favorites, refetch: refetchFavorites } = useQuery({
     queryKey: ['favorites', user?.id],
@@ -151,9 +223,10 @@ export default function Projects() {
     setSearchParams({});
     setSearch('');
     setBudgetFilter('all');
+    setSortBy('newest');
   };
 
-  const hasFilters = categoryFilter || difficultyFilter || search || budgetFilter !== 'all';
+  const hasFilters = categoryFilter || difficultyFilter || search || budgetFilter !== 'all' || sortBy !== 'newest';
 
   return (
     <Layout>
@@ -176,7 +249,7 @@ export default function Projects() {
           </p>
         </div>
 
-        {/* Difficulty Filter - Visual buttons */}
+        {/* Difficulty Filter - Visual buttons with counts */}
         <div className="mb-4 md:mb-6">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs md:text-sm font-medium text-muted-foreground flex-shrink-0">
@@ -187,6 +260,7 @@ export default function Projects() {
             {difficultyLevels.map((level) => {
               const isActive = (level.id === 'all' && !difficultyFilter) || difficultyFilter === level.id;
               const Icon = level.icon;
+              const count = filterCounts.difficulty[level.id] || 0;
               return (
                 <Button
                   key={level.id}
@@ -210,13 +284,23 @@ export default function Projects() {
                 >
                   {Icon && <Icon className="h-3.5 w-3.5" />}
                   {level.label}
+                  <Badge 
+                    variant="secondary" 
+                    className={cn(
+                      "ml-1 h-5 min-w-5 px-1.5 text-[10px] font-medium",
+                      isActive && level.id === 'all' && 'bg-primary-foreground/20 text-primary-foreground',
+                      isActive && level.id !== 'all' && 'bg-current/10'
+                    )}
+                  >
+                    {count}
+                  </Badge>
                 </Button>
               );
             })}
           </div>
         </div>
 
-        {/* Budget Filter Buttons - Horizontal scroll on mobile */}
+        {/* Budget Filter Buttons with counts */}
         <div className="mb-4 md:mb-6">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1 flex-shrink-0">
@@ -225,25 +309,37 @@ export default function Projects() {
             </span>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 md:flex-wrap scrollbar-hide">
-            {budgetRanges.map((range) => (
-              <Button
-                key={range.id}
-                variant={budgetFilter === range.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setBudgetFilter(range.id)}
-                className={cn(
-                  'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px] transition-all',
-                  budgetFilter === range.id && 'gradient-primary text-primary-foreground'
-                )}
-              >
-                <span className="hidden md:inline">{range.label}</span>
-                <span className="md:hidden">{range.range}</span>
-              </Button>
-            ))}
+            {budgetRanges.map((range) => {
+              const count = filterCounts.budget[range.id] || 0;
+              return (
+                <Button
+                  key={range.id}
+                  variant={budgetFilter === range.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setBudgetFilter(range.id)}
+                  className={cn(
+                    'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px] transition-all gap-1.5',
+                    budgetFilter === range.id && 'gradient-primary text-primary-foreground'
+                  )}
+                >
+                  <span className="hidden md:inline">{range.label}</span>
+                  <span className="md:hidden">{range.range}</span>
+                  <Badge 
+                    variant="secondary" 
+                    className={cn(
+                      "h-5 min-w-5 px-1.5 text-[10px] font-medium",
+                      budgetFilter === range.id && 'bg-primary-foreground/20 text-primary-foreground'
+                    )}
+                  >
+                    {count}
+                  </Badge>
+                </Button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Search and Category Filter */}
+        {/* Search, Category Filter, and Sort */}
         <div className="space-y-3 md:space-y-0 md:flex md:flex-row md:gap-4 mb-6 md:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -268,23 +364,43 @@ export default function Projects() {
                 setSearchParams(newParams);
               }}
             >
-              <SelectTrigger className="flex-1 md:w-40 h-10 md:h-9 text-sm">
+              <SelectTrigger className="flex-1 md:w-44 h-10 md:h-9 text-sm">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">All Categories ({allProjects?.length || 0})</SelectItem>
                 {categories?.map((cat) => (
                   <SelectItem key={cat.id} value={cat.slug}>
-                    {cat.name}
+                    {cat.name} ({filterCounts.category[cat.id] || 0})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="flex-1 md:w-48 h-10 md:h-9 text-sm">
+                <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((option) => {
+                  const Icon = option.icon;
+                  return (
+                    <SelectItem key={option.id} value={option.id}>
+                      <span className="flex items-center gap-2">
+                        <Icon className="h-3.5 w-3.5" />
+                        {option.label}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
             {hasFilters && (
-              <Button variant="ghost" onClick={clearFilters} className="gap-2 h-10 md:h-9">
+              <Button variant="ghost" onClick={clearFilters} className="gap-2 h-10 md:h-9 flex-shrink-0">
                 <X className="h-4 w-4" />
-                <span className="hidden sm:inline">Clear All</span>
+                <span className="hidden sm:inline">Clear</span>
               </Button>
             )}
           </div>
@@ -337,6 +453,16 @@ export default function Projects() {
                 <X
                   className="h-3 w-3 cursor-pointer"
                   onClick={() => setBudgetFilter('all')}
+                />
+              </Badge>
+            )}
+            {sortBy !== 'newest' && (
+              <Badge variant="secondary" className="gap-1">
+                <ArrowUpDown className="h-3 w-3" />
+                {sortOptions.find(s => s.id === sortBy)?.label}
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setSortBy('newest')}
                 />
               </Badge>
             )}
