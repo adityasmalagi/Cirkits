@@ -31,7 +31,7 @@ export function Layout({ children }: LayoutProps) {
       <Navbar />
       <main className="flex-1">
         {showBackButton && (
-          <div className="container mx-auto px-4 pt-4">
+          <div className="container mx-auto px-4 pt-4 md:hidden">
             <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground hover:text-foreground">
               <Link to={backLink.to}>
                 <ArrowLeft className="h-4 w-4" />
