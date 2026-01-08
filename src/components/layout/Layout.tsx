@@ -24,7 +24,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   const backLink = getBackLink();
-  const showBackButton = !isHomePage && !isProjectsPage;
+  const showBackButton = !isHomePage;
 
   return (
     <div className="min-h-screen flex flex-col">
