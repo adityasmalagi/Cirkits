@@ -66,17 +66,29 @@ export default function Projects() {
     },
   });
 
-  // Fetch ALL projects for counting (without filters)
+  // Fetch ALL projects for counting (with parts for accurate cost calculation)
   const { data: allProjects } = useQuery({
     queryKey: ['all-projects-for-counts'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
-        .select('id, difficulty, estimated_cost, category_id');
+        .select('id, difficulty, estimated_cost, category_id, project_parts(quantity, product:products(price))');
       if (error) throw error;
       return data;
     },
   });
+
+  // Helper to calculate actual cost from parts for counting
+  const getProjectCost = (project: any) => {
+    const parts = project.project_parts || [];
+    if (parts.length === 0) return project.estimated_cost || 0;
+    
+    return parts.reduce((sum: number, part: any) => {
+      const price = part.product?.price || 0;
+      const qty = part.quantity || 1;
+      return sum + (price * qty);
+    }, 0);
+  };
 
   // Calculate counts for filters
   const filterCounts = useMemo(() => {
@@ -92,8 +104,8 @@ export default function Projects() {
         difficulty[p.difficulty] = (difficulty[p.difficulty] || 0) + 1;
       }
       
-      // Budget counts
-      const cost = p.estimated_cost || 0;
+      // Budget counts using actual calculated cost
+      const cost = getProjectCost(p);
       if (cost < 1000) budget.under1000++;
       else if (cost <= 5000) budget['1000to5000']++;
       else budget.above5000++;
@@ -136,12 +148,25 @@ export default function Projects() {
     enabled: !!categories,
   });
 
+  // Helper to calculate actual cost from parts
+  const getActualCost = (project: Project & { project_parts?: any[] }) => {
+    const parts = project.project_parts || [];
+    if (parts.length === 0) return project.estimated_cost || 0;
+    
+    return parts.reduce((sum, part) => {
+      const price = part.product?.price || 0;
+      const qty = part.quantity || 1;
+      return sum + (price * qty);
+    }, 0);
+  };
+
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
     
     let result = projects.filter(project => {
-      const cost = project.estimated_cost || 0;
+      // Use actual calculated cost from parts for filtering
+      const cost = getActualCost(project);
       switch (budgetFilter) {
         case 'under1000':
           return cost < 1000;
@@ -154,13 +179,13 @@ export default function Projects() {
       }
     });
 
-    // Sort projects
+    // Sort projects using actual cost
     result = [...result].sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
-          return (a.estimated_cost || 0) - (b.estimated_cost || 0);
+          return getActualCost(a) - getActualCost(b);
         case 'price-high':
-          return (b.estimated_cost || 0) - (a.estimated_cost || 0);
+          return getActualCost(b) - getActualCost(a);
         case 'difficulty-asc':
           return (difficultyOrder[a.difficulty] || 0) - (difficultyOrder[b.difficulty] || 0);
         case 'difficulty-desc':
