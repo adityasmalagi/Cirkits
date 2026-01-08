@@ -153,6 +153,34 @@
     .text-xs {
       font-size: 0.625rem; /* 10px */
     }
+
+    /* Mobile touch targets - 44px minimum */
+    button,
+    [role="button"],
+    a,
+    input[type="checkbox"],
+    input[type="radio"],
+    select,
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Ensure buttons have proper padding for touch */
+    button:not(.icon-only),
+    [role="button"]:not(.icon-only) {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* Icon buttons should be at least 44x44 */
+    button.h-8,
+    button.h-9,
+    button.w-8,
+    button.w-9 {
+      min-height: 44px;
+      min-width: 44px;
+    }
   }
 }
 
