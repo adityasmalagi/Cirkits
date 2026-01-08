@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { PullToRefresh } from '@/components/layout/PullToRefresh';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { SubmitProjectDialog } from '@/components/projects/SubmitProjectDialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket, ArrowUpDown, ArrowUp, ArrowDown, Clock } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, DifficultyLevel } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -50,6 +51,17 @@ export default function Projects() {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['projects'] });
+    await queryClient.invalidateQueries({ queryKey: ['all-projects-for-counts'] });
+    await queryClient.invalidateQueries({ queryKey: ['categories'] });
+    toast({
+      title: 'Refreshed!',
+      description: 'Project catalog updated.',
+    });
+  }, [queryClient, toast]);
   
   const categoryFilter = searchParams.get('category');
   const difficultyFilter = searchParams.get('difficulty') as DifficultyLevel | null;
@@ -255,7 +267,8 @@ export default function Projects() {
 
   return (
     <Layout>
-      <div className="container py-4 md:py-8 px-3 md:px-6">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="container py-4 md:py-8 px-3 md:px-6">
         {/* Header */}
         <div className="mb-6 md:mb-8 flex flex-col gap-3 md:gap-4">
           <div className="flex items-start justify-between gap-2">
@@ -518,7 +531,8 @@ export default function Projects() {
             ))
           )}
         </div>
-      </div>
+        </div>
+      </PullToRefresh>
     </Layout>
   );
 }
