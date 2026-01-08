@@ -153,13 +153,6 @@ export default function ProjectDetail() {
   return (
     <Layout>
       <div className="container py-4 md:py-8 px-4">
-        {/* Back button */}
-        <Link to="/projects">
-          <Button variant="ghost" className="mb-4 md:mb-6 gap-2 h-10">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Projects
-          </Button>
-        </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Mobile Price Summary - Show at top on mobile */}
