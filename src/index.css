@@ -118,40 +118,50 @@
     @apply bg-background text-foreground font-sans antialiased transition-colors duration-300;
     font-feature-settings: "cv11", "ss01";
     /* Smaller base font on mobile */
-    @apply text-sm md:text-base;
+    @apply text-xs md:text-base;
+    font-size: 11px;
   }
 
   /* Mobile typography adjustments */
   h1 {
-    @apply text-xl md:text-4xl;
+    @apply text-lg md:text-4xl;
   }
   
   h2 {
-    @apply text-lg md:text-3xl;
+    @apply text-base md:text-3xl;
   }
   
   h3 {
-    @apply text-base md:text-2xl;
+    @apply text-sm md:text-2xl;
   }
   
   h4 {
-    @apply text-sm md:text-xl;
+    @apply text-xs md:text-xl;
   }
   
   p {
     @apply text-xs md:text-base;
   }
 
+  @media (min-width: 768px) {
+    body {
+      font-size: 1rem;
+    }
+  }
+
   /* Additional mobile-first sizing */
   @media (max-width: 767px) {
-    .text-base {
-      font-size: 0.8125rem; /* 13px */
+    .text-lg {
+      font-size: 0.875rem; /* 14px */
     }
-    .text-sm {
+    .text-base {
       font-size: 0.75rem; /* 12px */
     }
+    .text-sm {
+      font-size: 0.6875rem; /* 11px */
+    }
     .text-xs {
-      font-size: 0.625rem; /* 10px */
+      font-size: 0.5625rem; /* 9px */
     }
 
     /* Mobile touch targets - 44px minimum */
