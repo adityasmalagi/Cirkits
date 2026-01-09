@@ -1,21 +1,22 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
-import { PullToRefresh } from '@/components/layout/PullToRefresh';
 import { ProjectCard } from '@/components/projects/ProjectCard';
+import { ProjectListItem } from '@/components/projects/ProjectListItem';
 import { SubmitProjectDialog } from '@/components/projects/SubmitProjectDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket, ArrowUpDown, ArrowUp, ArrowDown, Clock } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket, ArrowUpDown, ArrowUp, ArrowDown, Clock, LayoutGrid, List } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, DifficultyLevel } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type BudgetRange = 'all' | 'under1000' | '1000to5000' | 'above5000';
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'difficulty-asc' | 'difficulty-desc';
@@ -49,19 +50,10 @@ export default function Projects() {
   const [search, setSearch] = useState('');
   const [budgetFilter, setBudgetFilter] = useState<BudgetRange>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['projects'] });
-    await queryClient.invalidateQueries({ queryKey: ['all-projects-for-counts'] });
-    await queryClient.invalidateQueries({ queryKey: ['categories'] });
-    toast({
-      title: 'Refreshed!',
-      description: 'Project catalog updated.',
-    });
-  }, [queryClient, toast]);
+  const isMobile = useIsMobile();
   
   const categoryFilter = searchParams.get('category');
   const difficultyFilter = searchParams.get('difficulty') as DifficultyLevel | null;
@@ -267,8 +259,7 @@ export default function Projects() {
 
   return (
     <Layout>
-      <PullToRefresh onRefresh={handleRefresh}>
-        <div className="container py-4 md:py-8 px-3 md:px-6">
+      <div className="container py-4 md:py-8 px-3 md:px-6">
         {/* Header */}
         <div className="mb-6 md:mb-8 flex flex-col gap-3 md:gap-4">
           <div className="flex items-start justify-between gap-2">
@@ -435,6 +426,28 @@ export default function Projects() {
               </SelectContent>
             </Select>
 
+            {/* View Mode Toggle - Mobile Only */}
+            {isMobile && (
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="icon"
+                  className="h-10 w-10 rounded-r-none"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="icon"
+                  className="h-10 w-10 rounded-l-none"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
             {hasFilters && (
               <Button variant="ghost" onClick={clearFilters} className="gap-2 h-10 md:h-9 flex-shrink-0">
                 <X className="h-4 w-4" />
@@ -507,32 +520,57 @@ export default function Projects() {
           </div>
         )}
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-          {isLoading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-72 md:h-80" />
-            ))
-          ) : filteredProjects?.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground">No projects found matching your criteria.</p>
-              <Button variant="link" onClick={clearFilters}>
-                Clear filters
-              </Button>
-            </div>
-          ) : (
-            filteredProjects?.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                isFavorite={favorites?.includes(project.id)}
-                onToggleFavorite={() => toggleFavorite(project.id)}
-              />
-            ))
-          )}
+        {/* Projects Grid/List */}
+        {isMobile && viewMode === 'list' ? (
+          <div className="space-y-2">
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-20" />
+              ))
+            ) : filteredProjects?.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No projects found matching your criteria.</p>
+                <Button variant="link" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              </div>
+            ) : (
+              filteredProjects?.map((project) => (
+                <ProjectListItem
+                  key={project.id}
+                  project={project}
+                  isFavorite={favorites?.includes(project.id)}
+                  onToggleFavorite={() => toggleFavorite(project.id)}
+                />
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-72 md:h-80" />
+              ))
+            ) : filteredProjects?.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No projects found matching your criteria.</p>
+                <Button variant="link" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              </div>
+            ) : (
+              filteredProjects?.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  isFavorite={favorites?.includes(project.id)}
+                  onToggleFavorite={() => toggleFavorite(project.id)}
+                />
+              ))
+            )}
+          </div>
+        )}
         </div>
-        </div>
-      </PullToRefresh>
     </Layout>
   );
 }
