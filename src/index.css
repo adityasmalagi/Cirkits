@@ -120,6 +120,26 @@
     /* Smaller base font on mobile */
     @apply text-xs md:text-base;
     font-size: 10px;
+    line-height: 1.6;
+  }
+
+  /* Increased line-height on mobile for readability */
+  @media (max-width: 767px) {
+    body {
+      line-height: 1.7;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      line-height: 1.4;
+    }
+    p, li, span {
+      line-height: 1.7;
+    }
+  }
+
+  @media (min-width: 768px) {
+    body {
+      line-height: 1.5;
+    }
   }
 
   /* Mobile typography adjustments - 1pt smaller than desktop */
@@ -149,8 +169,44 @@
     }
   }
 
-  /* Additional mobile-first sizing - 1pt smaller */
+  /* Additional mobile-first sizing - Compact mode (default) */
   @media (max-width: 767px) {
+    .font-compact .text-lg {
+      font-size: 0.8125rem; /* 13px */
+    }
+    .font-compact .text-base {
+      font-size: 0.6875rem; /* 11px */
+    }
+    .font-compact .text-sm {
+      font-size: 0.625rem; /* 10px */
+    }
+    .font-compact .text-xs {
+      font-size: 0.5rem; /* 8px */
+    }
+    .font-compact body,
+    .font-compact {
+      font-size: 10px;
+    }
+
+    /* Normal mode - larger fonts */
+    .font-normal .text-lg {
+      font-size: 0.9375rem; /* 15px */
+    }
+    .font-normal .text-base {
+      font-size: 0.8125rem; /* 13px */
+    }
+    .font-normal .text-sm {
+      font-size: 0.75rem; /* 12px */
+    }
+    .font-normal .text-xs {
+      font-size: 0.625rem; /* 10px */
+    }
+    .font-normal body,
+    .font-normal {
+      font-size: 12px;
+    }
+
+    /* Fallback for when no class is set */
     .text-lg {
       font-size: 0.8125rem; /* 13px */
     }
