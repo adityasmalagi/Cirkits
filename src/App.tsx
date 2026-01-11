@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ShoppingCartProvider } from "@/hooks/useShoppingCart";
+import { FontSizeProvider } from "@/hooks/useFontSize";
 import { ShoppingCartDrawer } from "@/components/cart/ShoppingCartDrawer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import Index from "./pages/Index";
@@ -52,14 +53,16 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ShoppingCartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ShoppingCartDrawer />
-              <AnimatedRoutes />
-            </BrowserRouter>
-          </TooltipProvider>
+          <FontSizeProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ShoppingCartDrawer />
+                <AnimatedRoutes />
+              </BrowserRouter>
+            </TooltipProvider>
+          </FontSizeProvider>
         </ShoppingCartProvider>
       </AuthProvider>
     </QueryClientProvider>

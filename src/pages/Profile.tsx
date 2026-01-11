@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useFontSize } from '@/hooks/useFontSize';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,10 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { User, Mail, Phone, MapPin, FileText, Save, ArrowLeft, Edit, Trash2, FolderOpen } from 'lucide-react';
+import { User, Mail, Phone, MapPin, FileText, Save, ArrowLeft, Edit, Trash2, FolderOpen, Type } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +42,7 @@ interface UserProject {
 
 export default function Profile() {
   const { user, isLoading: authLoading } = useAuth();
+  const { fontSize, setFontSize, isCompact } = useFontSize();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -416,6 +419,44 @@ export default function Profile() {
                   {isSaving ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Display Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Type className="h-5 w-5" />
+                Display Settings
+              </CardTitle>
+              <CardDescription>
+                Customize how content is displayed on your device
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-base font-medium">Text Size</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isCompact ? 'Compact - Smaller text, more content visible' : 'Normal - Larger text, easier to read'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm ${isCompact ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    Compact
+                  </span>
+                  <Switch
+                    checked={!isCompact}
+                    onCheckedChange={(checked) => setFontSize(checked ? 'normal' : 'compact')}
+                  />
+                  <span className={`text-sm ${!isCompact ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    Normal
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This setting affects text size on mobile devices. Changes apply immediately.
+              </p>
             </CardContent>
           </Card>
 
