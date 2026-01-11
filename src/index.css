@@ -119,20 +119,20 @@
     font-feature-settings: "cv11", "ss01";
     /* Smaller base font on mobile */
     @apply text-xs md:text-base;
-    font-size: 11px;
+    font-size: 10px;
   }
 
-  /* Mobile typography adjustments */
+  /* Mobile typography adjustments - 1pt smaller than desktop */
   h1 {
-    @apply text-lg md:text-4xl;
+    @apply text-base md:text-4xl;
   }
   
   h2 {
-    @apply text-base md:text-3xl;
+    @apply text-sm md:text-3xl;
   }
   
   h3 {
-    @apply text-sm md:text-2xl;
+    @apply text-xs md:text-2xl;
   }
   
   h4 {
@@ -149,19 +149,19 @@
     }
   }
 
-  /* Additional mobile-first sizing */
+  /* Additional mobile-first sizing - 1pt smaller */
   @media (max-width: 767px) {
     .text-lg {
-      font-size: 0.875rem; /* 14px */
+      font-size: 0.8125rem; /* 13px */
     }
     .text-base {
-      font-size: 0.75rem; /* 12px */
-    }
-    .text-sm {
       font-size: 0.6875rem; /* 11px */
     }
+    .text-sm {
+      font-size: 0.625rem; /* 10px */
+    }
     .text-xs {
-      font-size: 0.5625rem; /* 9px */
+      font-size: 0.5rem; /* 8px */
     }
 
     /* Mobile touch targets - 44px minimum */
