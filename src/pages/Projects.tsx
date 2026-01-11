@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ProjectCard } from '@/components/projects/ProjectCard';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket, ArrowUpDown, ArrowUp, ArrowDown, Clock, LayoutGrid, List } from 'lucide-react';
+import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket, ArrowUpDown, ArrowUp, ArrowDown, Clock, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, DifficultyLevel } from '@/types/database';
@@ -17,6 +17,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+const ITEMS_PER_PAGE = 12;
 
 type BudgetRange = 'all' | 'under1000' | '1000to5000' | 'above5000';
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'difficulty-asc' | 'difficulty-desc';
@@ -51,6 +53,9 @@ export default function Projects() {
   const [budgetFilter, setBudgetFilter] = useState<BudgetRange>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -202,6 +207,45 @@ export default function Projects() {
 
     return result;
   }, [projects, budgetFilter, sortBy]);
+
+  // Paginated projects for display
+  const displayedProjects = useMemo(() => {
+    return filteredProjects.slice(0, displayCount);
+  }, [filteredProjects, displayCount]);
+
+  const hasMore = displayCount < filteredProjects.length;
+
+  // Reset display count when filters change
+  useEffect(() => {
+    setDisplayCount(ITEMS_PER_PAGE);
+  }, [categoryFilter, difficultyFilter, search, budgetFilter, sortBy]);
+
+  // Infinite scroll observer
+  const loadMore = useCallback(() => {
+    if (!hasMore || isLoadingMore) return;
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      setDisplayCount(prev => prev + ITEMS_PER_PAGE);
+      setIsLoadingMore(false);
+    }, 300);
+  }, [hasMore, isLoadingMore]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingMore, loadMore]);
 
   const { data: favorites, refetch: refetchFavorites } = useQuery({
     queryKey: ['favorites', user?.id],
@@ -535,14 +579,22 @@ export default function Projects() {
                 </Button>
               </div>
             ) : (
-              filteredProjects?.map((project) => (
-                <ProjectListItem
-                  key={project.id}
-                  project={project}
-                  isFavorite={favorites?.includes(project.id)}
-                  onToggleFavorite={() => toggleFavorite(project.id)}
-                />
-              ))
+              <>
+                {displayedProjects?.map((project) => (
+                  <ProjectListItem
+                    key={project.id}
+                    project={project}
+                    isFavorite={favorites?.includes(project.id)}
+                    onToggleFavorite={() => toggleFavorite(project.id)}
+                  />
+                ))}
+                {/* Swipe hint on first load */}
+                {displayedProjects.length > 0 && displayCount === ITEMS_PER_PAGE && (
+                  <p className="text-center text-xs text-muted-foreground py-2">
+                    💡 Swipe right to add to cart, left to favorite
+                  </p>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -559,7 +611,7 @@ export default function Projects() {
                 </Button>
               </div>
             ) : (
-              filteredProjects?.map((project) => (
+              displayedProjects?.map((project) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
@@ -567,6 +619,26 @@ export default function Projects() {
                   onToggleFavorite={() => toggleFavorite(project.id)}
                 />
               ))
+            )}
+          </div>
+        )}
+
+        {/* Infinite scroll trigger */}
+        {!isLoading && filteredProjects.length > 0 && (
+          <div ref={loadMoreRef} className="flex justify-center py-8">
+            {isLoadingMore ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-sm">Loading more...</span>
+              </div>
+            ) : hasMore ? (
+              <p className="text-sm text-muted-foreground">
+                Showing {displayedProjects.length} of {filteredProjects.length} projects
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                All {filteredProjects.length} projects loaded
+              </p>
             )}
           </div>
         )}

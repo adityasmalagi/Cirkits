@@ -100,7 +100,7 @@ export function Navbar() {
             onClick={handleCartClick}
           >
             <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
-            {totalItems > 0 && (
+            {user && totalItems > 0 && (
               <Badge 
                 className="absolute -top-1 -right-1 h-4 w-4 md:h-5 md:w-5 flex items-center justify-center p-0 text-[10px] md:text-xs gradient-primary border-0"
               >
