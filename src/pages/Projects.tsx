@@ -324,9 +324,9 @@ export default function Projects() {
 
         {/* Difficulty Filter - Visual buttons with counts */}
         <div className="mb-4 md:mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs md:text-sm font-medium text-muted-foreground flex-shrink-0">
-              Difficulty:
+          <div className="flex items-center gap-2 mb-2.5">
+            <span className="text-xs md:text-sm font-semibold text-foreground/80 flex-shrink-0">
+              Difficulty
             </span>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 md:flex-wrap scrollbar-hide">
@@ -349,18 +349,18 @@ export default function Projects() {
                     setSearchParams(newParams);
                   }}
                   className={cn(
-                    'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px] gap-1.5 border transition-all',
+                    'flex-shrink-0 text-xs md:text-sm min-h-[40px] md:min-h-[36px] px-3 md:px-4 gap-1.5 border transition-all rounded-full',
                     isActive && level.id !== 'all' && level.color,
-                    isActive && level.id === 'all' && 'bg-primary text-primary-foreground border-primary',
-                    !isActive && 'hover:bg-muted'
+                    isActive && level.id === 'all' && 'bg-primary text-primary-foreground border-primary shadow-sm',
+                    !isActive && 'hover:bg-muted/80'
                   )}
                 >
                   {Icon && <Icon className="h-3.5 w-3.5" />}
-                  {level.label}
+                  <span className="whitespace-nowrap">{level.label}</span>
                   <Badge 
                     variant="secondary" 
                     className={cn(
-                      "ml-1 h-5 min-w-5 px-1.5 text-[10px] font-medium",
+                      "ml-0.5 h-5 min-w-5 px-1.5 text-[10px] font-semibold rounded-full",
                       isActive && level.id === 'all' && 'bg-primary-foreground/20 text-primary-foreground',
                       isActive && level.id !== 'all' && 'bg-current/10'
                     )}
@@ -374,11 +374,11 @@ export default function Projects() {
         </div>
 
         {/* Budget Filter Buttons with counts */}
-        <div className="mb-4 md:mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1 flex-shrink-0">
-              <IndianRupee className="h-3 w-3 md:h-4 md:w-4" />
-              Budget:
+        <div className="mb-5 md:mb-6">
+          <div className="flex items-center gap-2 mb-2.5">
+            <span className="text-xs md:text-sm font-semibold text-foreground/80 flex items-center gap-1.5 flex-shrink-0">
+              <IndianRupee className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              Budget
             </span>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 md:flex-wrap scrollbar-hide">
@@ -391,16 +391,16 @@ export default function Projects() {
                   size="sm"
                   onClick={() => setBudgetFilter(range.id)}
                   className={cn(
-                    'flex-shrink-0 text-xs md:text-sm min-h-[36px] md:min-h-[32px] transition-all gap-1.5',
-                    budgetFilter === range.id && 'gradient-primary text-primary-foreground'
+                    'flex-shrink-0 text-xs md:text-sm min-h-[40px] md:min-h-[36px] px-3 md:px-4 transition-all gap-1.5 rounded-full',
+                    budgetFilter === range.id && 'gradient-primary text-primary-foreground shadow-sm'
                   )}
                 >
-                  <span className="hidden md:inline">{range.label}</span>
-                  <span className="md:hidden">{range.range}</span>
+                  <span className="hidden md:inline whitespace-nowrap">{range.label}</span>
+                  <span className="md:hidden whitespace-nowrap">{range.range}</span>
                   <Badge 
                     variant="secondary" 
                     className={cn(
-                      "h-5 min-w-5 px-1.5 text-[10px] font-medium",
+                      "h-5 min-w-5 px-1.5 text-[10px] font-semibold rounded-full",
                       budgetFilter === range.id && 'bg-primary-foreground/20 text-primary-foreground'
                     )}
                   >
@@ -420,11 +420,11 @@ export default function Projects() {
               placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-10 md:h-9"
+              className="pl-10 h-11 md:h-10 text-sm rounded-xl border-muted-foreground/20 focus:border-primary"
             />
           </div>
 
-          <div className="flex gap-2 md:gap-4">
+          <div className="flex gap-2 md:gap-4 flex-wrap md:flex-nowrap">
             <Select
               value={categoryFilter || 'all'}
               onValueChange={(value) => {
@@ -437,10 +437,12 @@ export default function Projects() {
                 setSearchParams(newParams);
               }}
             >
-              <SelectTrigger className="flex-1 md:w-44 h-10 md:h-9 text-sm">
-                <SelectValue placeholder="Category" />
+              <SelectTrigger className="w-[calc(50%-4px)] md:w-44 h-10 md:h-9 text-xs md:text-sm">
+                <span className="truncate">
+                  <SelectValue placeholder="Category" />
+                </span>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-w-[280px] md:max-w-none">
                 <SelectItem value="all">All Categories ({allProjects?.length || 0})</SelectItem>
                 {categories?.map((cat) => (
                   <SelectItem key={cat.id} value={cat.slug}>
@@ -451,18 +453,22 @@ export default function Projects() {
             </Select>
 
             <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-              <SelectTrigger className="flex-1 md:w-48 h-10 md:h-9 text-sm">
-                <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
-                <SelectValue placeholder="Sort by" />
+              <SelectTrigger className="w-[calc(50%-4px)] md:w-48 h-10 md:h-9 text-xs md:text-sm">
+                <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                  <ArrowUpDown className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {sortOptions.find(o => o.id === sortBy)?.label.replace('Price: ', '').replace('Difficulty: ', '')}
+                  </span>
+                </div>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="min-w-[200px]">
                 {sortOptions.map((option) => {
                   const Icon = option.icon;
                   return (
                     <SelectItem key={option.id} value={option.id}>
                       <span className="flex items-center gap-2">
-                        <Icon className="h-3.5 w-3.5" />
-                        {option.label}
+                        <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                        <span>{option.label}</span>
                       </span>
                     </SelectItem>
                   );
@@ -472,11 +478,11 @@ export default function Projects() {
 
             {/* View Mode Toggle - Mobile Only */}
             {isMobile && (
-              <div className="flex border rounded-md">
+              <div className="flex border rounded-xl overflow-hidden">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="icon"
-                  className="h-10 w-10 rounded-r-none"
+                  className="h-10 w-10 rounded-none"
                   onClick={() => setViewMode('grid')}
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -484,7 +490,7 @@ export default function Projects() {
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="icon"
-                  className="h-10 w-10 rounded-l-none"
+                  className="h-10 w-10 rounded-none"
                   onClick={() => setViewMode('list')}
                 >
                   <List className="h-4 w-4" />
@@ -493,9 +499,13 @@ export default function Projects() {
             )}
 
             {hasFilters && (
-              <Button variant="ghost" onClick={clearFilters} className="gap-2 h-10 md:h-9 flex-shrink-0">
+              <Button 
+                variant="ghost" 
+                onClick={clearFilters} 
+                className="gap-1.5 h-10 md:h-9 px-3 flex-shrink-0 text-muted-foreground hover:text-foreground"
+              >
                 <X className="h-4 w-4" />
-                <span className="hidden sm:inline">Clear</span>
+                <span className="hidden sm:inline text-sm">Clear</span>
               </Button>
             )}
           </div>
