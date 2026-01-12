@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -582,55 +583,99 @@ export default function Projects() {
                 <Skeleton key={i} className="h-20" />
               ))
             ) : filteredProjects?.length === 0 ? (
-              <div className="text-center py-12">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-12"
+              >
                 <p className="text-muted-foreground">No projects found matching your criteria.</p>
                 <Button variant="link" onClick={clearFilters}>
                   Clear filters
                 </Button>
-              </div>
+              </motion.div>
             ) : (
               <>
-                {displayedProjects?.map((project) => (
-                  <ProjectListItem
-                    key={project.id}
-                    project={project}
-                    isFavorite={favorites?.includes(project.id)}
-                    onToggleFavorite={() => toggleFavorite(project.id)}
-                  />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {displayedProjects?.map((project, index) => (
+                    <motion.div
+                      key={project.id}
+                      layout
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                      transition={{ 
+                        duration: 0.25,
+                        delay: index < 12 ? index * 0.03 : 0,
+                        layout: { duration: 0.3 }
+                      }}
+                    >
+                      <ProjectListItem
+                        project={project}
+                        isFavorite={favorites?.includes(project.id)}
+                        onToggleFavorite={() => toggleFavorite(project.id)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
                 {/* Swipe hint on first load */}
                 {displayedProjects.length > 0 && displayCount === ITEMS_PER_PAGE && (
-                  <p className="text-center text-xs text-muted-foreground py-2">
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-center text-xs text-muted-foreground py-2"
+                  >
                     💡 Swipe right to add to cart, left to favorite
-                  </p>
+                  </motion.p>
                 )}
               </>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+          <motion.div 
+            layout
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6"
+          >
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <Skeleton key={i} className="h-72 md:h-80" />
               ))
             ) : filteredProjects?.length === 0 ? (
-              <div className="col-span-full text-center py-12">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="col-span-full text-center py-12"
+              >
                 <p className="text-muted-foreground">No projects found matching your criteria.</p>
                 <Button variant="link" onClick={clearFilters}>
                   Clear filters
                 </Button>
-              </div>
+              </motion.div>
             ) : (
-              displayedProjects?.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  isFavorite={favorites?.includes(project.id)}
-                  onToggleFavorite={() => toggleFavorite(project.id)}
-                />
-              ))
+              <AnimatePresence mode="popLayout">
+                {displayedProjects?.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    layout
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ 
+                      duration: 0.3,
+                      delay: index < 12 ? index * 0.04 : 0,
+                      layout: { duration: 0.3, type: "spring", stiffness: 300, damping: 30 }
+                    }}
+                  >
+                    <ProjectCard
+                      project={project}
+                      isFavorite={favorites?.includes(project.id)}
+                      onToggleFavorite={() => toggleFavorite(project.id)}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* Infinite scroll trigger */}
