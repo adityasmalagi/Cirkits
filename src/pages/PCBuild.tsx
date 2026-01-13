@@ -6855,15 +6855,15 @@ const pcComponents: PCComponent[] = [
 ];
 
 const categories = [
-  { id: 'processor', name: 'Processor', icon: Cpu },
-  { id: 'graphics', name: 'Graphics Card', icon: MonitorSmartphone },
-  { id: 'memory', name: 'RAM', icon: HardDrive },
-  { id: 'storage', name: 'Storage', icon: HardDrive },
-  { id: 'motherboard', name: 'Motherboard', icon: Box },
-  { id: 'psu', name: 'Power Supply', icon: Zap },
-  { id: 'case', name: 'Case', icon: Box },
-  { id: 'cooling', name: 'Cooling', icon: Fan },
-  { id: 'monitor', name: 'Monitor', icon: MonitorSmartphone },
+  { id: 'processor', name: 'Processor', shortName: 'CPU', icon: Cpu },
+  { id: 'graphics', name: 'Graphics Card', shortName: 'GPU', icon: MonitorSmartphone },
+  { id: 'memory', name: 'RAM', shortName: 'RAM', icon: HardDrive },
+  { id: 'storage', name: 'Storage', shortName: 'ROM', icon: HardDrive },
+  { id: 'motherboard', name: 'Motherboard', shortName: 'Board', icon: Box },
+  { id: 'psu', name: 'Power Supply', shortName: 'PSU', icon: Zap },
+  { id: 'case', name: 'Case', shortName: 'Case', icon: Box },
+  { id: 'cooling', name: 'Cooling', shortName: 'Cool', icon: Fan },
+  { id: 'monitor', name: 'Monitor', shortName: 'Display', icon: MonitorSmartphone },
 ];
 
 const budgetTiers = [
@@ -7167,7 +7167,7 @@ export default function PCBuild() {
           {/* Main Content */}
           <div className="flex-1">
             <Tabs defaultValue="processor" className="space-y-6">
-              <TabsList className="flex flex-wrap h-auto gap-2 bg-transparent p-0">
+              <TabsList className="grid grid-cols-3 sm:grid-cols-5 lg:flex lg:flex-wrap h-auto gap-2 bg-transparent p-0 w-full">
                 {categories.map((cat) => {
                   const isSelected = !!selectedComponents[cat.id];
                   const categoryComponents = filteredComponents.filter(c => c.category === cat.id);
@@ -7176,14 +7176,19 @@ export default function PCBuild() {
                       key={cat.id}
                       value={cat.id}
                       className={cn(
-                        'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2',
-                        isSelected && 'ring-2 ring-green-500 ring-offset-2'
+                        'flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2 sm:px-3 sm:py-2 min-h-[56px] sm:min-h-0',
+                        'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground',
+                        'border border-border rounded-lg bg-card/50',
+                        isSelected && 'ring-2 ring-green-500 ring-offset-2 ring-offset-background'
                       )}
                     >
-                      <cat.icon className="h-4 w-4" />
-                      <span className="hidden sm:inline">{cat.name}</span>
-                      {isSelected && <Check className="h-3 w-3 text-green-500" />}
-                      <Badge variant="secondary" className="ml-1 text-xs">
+                      <cat.icon className="h-5 w-5 sm:h-4 sm:w-4" />
+                      <span className="text-[10px] sm:text-sm font-medium">
+                        <span className="sm:hidden">{cat.shortName}</span>
+                        <span className="hidden sm:inline">{cat.name}</span>
+                      </span>
+                      {isSelected && <Check className="h-3 w-3 text-green-500 absolute top-1 right-1 sm:relative sm:top-auto sm:right-auto" />}
+                      <Badge variant="secondary" className="text-[9px] sm:text-xs px-1.5 sm:ml-1 hidden sm:inline-flex">
                         {categoryComponents.length}
                       </Badge>
                     </TabsTrigger>
