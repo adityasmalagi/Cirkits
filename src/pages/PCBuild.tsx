@@ -1,5 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useDrag } from '@use-gesture/react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6952,9 +6954,11 @@ export default function PCBuild() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedComponents, setSelectedComponents] = useState<Record<string, PCComponent>>({});
   const [budgetTier, setBudgetTier] = useState<BudgetTier>('all');
+  const [activeCategory, setActiveCategory] = useState('processor');
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const requireAuth = (action: () => void) => {
     if (!user) {
@@ -7069,8 +7073,38 @@ export default function PCBuild() {
     return warnings;
   }, [selectedComponents]);
 
+  // Swipe navigation for mobile
+  const handleSwipeCategory = useCallback((direction: 'left' | 'right') => {
+    const currentIndex = categories.findIndex(c => c.id === activeCategory);
+    if (direction === 'left' && currentIndex < categories.length - 1) {
+      setActiveCategory(categories[currentIndex + 1].id);
+    } else if (direction === 'right' && currentIndex > 0) {
+      setActiveCategory(categories[currentIndex - 1].id);
+    }
+  }, [activeCategory]);
+
+  const swipeGesture = useDrag(
+    ({ swipe: [swipeX], direction: [dirX], velocity: [vx] }) => {
+      if (!isMobile) return;
+      if (swipeX !== 0 || (Math.abs(vx) > 0.3 && Math.abs(dirX) > 0)) {
+        if (swipeX === -1 || dirX > 0) {
+          handleSwipeCategory('right');
+        } else if (swipeX === 1 || dirX < 0) {
+          handleSwipeCategory('left');
+        }
+      }
+    },
+    { 
+      axis: 'x',
+      swipe: { velocity: 0.3, distance: 50 },
+      filterTaps: true,
+      preventDefault: true,
+    }
+  );
+
   const totalPrice = Object.values(selectedComponents).reduce((sum, c) => sum + c.price, 0);
   const selectedCount = Object.keys(selectedComponents).length;
+  const currentCategoryIndex = categories.findIndex(c => c.id === activeCategory);
 
   return (
     <Layout>
@@ -7166,8 +7200,73 @@ export default function PCBuild() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
           <div className="flex-1">
-            <Tabs defaultValue="processor" className="space-y-6">
-              <TabsList className="grid grid-cols-3 sm:grid-cols-5 lg:flex lg:flex-wrap h-auto gap-2 bg-transparent p-0 w-full">
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-6">
+              {/* Mobile Swipe Indicator */}
+              {isMobile && (
+                <div className="flex items-center justify-between px-2 py-2 bg-muted/50 rounded-lg mb-2">
+                  <button 
+                    onClick={() => handleSwipeCategory('right')}
+                    disabled={currentCategoryIndex === 0}
+                    className={cn(
+                      "p-2 rounded-full transition-colors",
+                      currentCategoryIndex === 0 ? "text-muted-foreground/30" : "text-primary hover:bg-primary/10"
+                    )}
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const cat = categories[currentCategoryIndex];
+                      const Icon = cat.icon;
+                      return (
+                        <>
+                          <Icon className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">{cat.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({currentCategoryIndex + 1}/{categories.length})
+                          </span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                  <button 
+                    onClick={() => handleSwipeCategory('left')}
+                    disabled={currentCategoryIndex === categories.length - 1}
+                    className={cn(
+                      "p-2 rounded-full transition-colors",
+                      currentCategoryIndex === categories.length - 1 ? "text-muted-foreground/30" : "text-primary hover:bg-primary/10"
+                    )}
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              {/* Category Dots for Mobile */}
+              {isMobile && (
+                <div className="flex justify-center gap-1.5 pb-2">
+                  {categories.map((cat, index) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-all",
+                        index === currentCategoryIndex 
+                          ? "bg-primary w-6" 
+                          : selectedComponents[cat.id] 
+                            ? "bg-green-500" 
+                            : "bg-muted-foreground/30"
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <TabsList className="hidden sm:grid sm:grid-cols-5 lg:flex lg:flex-wrap h-auto gap-2 bg-transparent p-0 w-full">
                 {categories.map((cat) => {
                   const isSelected = !!selectedComponents[cat.id];
                   const categoryComponents = filteredComponents.filter(c => c.category === cat.id);
@@ -7197,81 +7296,92 @@ export default function PCBuild() {
               </TabsList>
 
               {categories.map((cat) => (
-                <TabsContent key={cat.id} value={cat.id} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {filteredComponents
-                      .filter((c) => c.category === cat.id)
-                      .map((component) => {
-                        const isSelected = selectedComponents[cat.id]?.id === component.id;
-                        return (
-                          <Card
-                            key={component.id}
-                            className={cn(
-                              'cursor-pointer transition-all hover:shadow-lg',
-                              isSelected && 'ring-2 ring-primary bg-primary/5'
-                            )}
-                            onClick={() => toggleComponent(component)}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex flex-wrap items-center gap-1 mb-1">
-                                    <Badge variant="secondary" className="text-xs">{component.brand}</Badge>
-                                    {component.recommended && (
-                                      <Badge className="gradient-primary border-0 text-xs">Recommended</Badge>
-                                    )}
-                                    {component.socket && (
-                                      <Badge variant="outline" className="text-xs">{component.socket}</Badge>
-                                    )}
-                                    {component.ramType && (
-                                      <Badge variant="outline" className="text-xs">{component.ramType}</Badge>
-                                    )}
-                                  </div>
-                                  <h3 className="font-semibold text-sm">{component.name}</h3>
-                                </div>
-                                <div className={cn(
-                                  'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ml-2',
-                                  isSelected ? 'bg-primary border-primary' : 'border-muted-foreground/30'
-                                )}>
-                                  {isSelected && <Check className="h-4 w-4 text-primary-foreground" />}
-                                </div>
-                              </div>
-
-                              <div className="flex flex-wrap gap-1 mb-3">
-                                {component.specs.map((spec, i) => (
-                                  <span key={i} className="text-xs bg-muted px-2 py-1 rounded">
-                                    {spec}
-                                  </span>
-                                ))}
-                              </div>
-
-                              <div className="flex items-center justify-between">
-                                <span className="text-lg font-bold text-primary">
-                                  ₹{component.price.toLocaleString('en-IN')}
-                                </span>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="gap-1"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    window.open(component.amazonUrl, '_blank');
-                                  }}
-                                >
-                                  <ShoppingCart className="h-3 w-3" />
-                                  Amazon
-                                  <ExternalLink className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    {filteredComponents.filter(c => c.category === cat.id).length === 0 && (
-                      <div className="col-span-2 text-center py-8 text-muted-foreground">
-                        No components available in this budget range. Try a different filter.
-                      </div>
+                <TabsContent key={cat.id} value={cat.id} className="space-y-4 mt-0">
+                  <div 
+                    {...(isMobile ? swipeGesture() : {})}
+                    className="touch-pan-y"
+                  >
+                    {/* Swipe hint on mobile */}
+                    {isMobile && (
+                      <p className="text-center text-xs text-muted-foreground mb-3">
+                        👆 Swipe left/right to browse categories
+                      </p>
                     )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredComponents
+                        .filter((c) => c.category === cat.id)
+                        .map((component) => {
+                          const isSelected = selectedComponents[cat.id]?.id === component.id;
+                          return (
+                            <Card
+                              key={component.id}
+                              className={cn(
+                                'cursor-pointer transition-all hover:shadow-lg',
+                                isSelected && 'ring-2 ring-primary bg-primary/5'
+                              )}
+                              onClick={() => toggleComponent(component)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex flex-wrap items-center gap-1 mb-1">
+                                      <Badge variant="secondary" className="text-xs">{component.brand}</Badge>
+                                      {component.recommended && (
+                                        <Badge className="gradient-primary border-0 text-xs">Recommended</Badge>
+                                      )}
+                                      {component.socket && (
+                                        <Badge variant="outline" className="text-xs">{component.socket}</Badge>
+                                      )}
+                                      {component.ramType && (
+                                        <Badge variant="outline" className="text-xs">{component.ramType}</Badge>
+                                      )}
+                                    </div>
+                                    <h3 className="font-semibold text-sm">{component.name}</h3>
+                                  </div>
+                                  <div className={cn(
+                                    'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ml-2',
+                                    isSelected ? 'bg-primary border-primary' : 'border-muted-foreground/30'
+                                  )}>
+                                    {isSelected && <Check className="h-4 w-4 text-primary-foreground" />}
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-wrap gap-1 mb-3">
+                                  {component.specs.map((spec, i) => (
+                                    <span key={i} className="text-xs bg-muted px-2 py-1 rounded">
+                                      {spec}
+                                    </span>
+                                  ))}
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <span className="text-lg font-bold text-primary">
+                                    ₹{component.price.toLocaleString('en-IN')}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="gap-1"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.open(component.amazonUrl, '_blank');
+                                    }}
+                                  >
+                                    <ShoppingCart className="h-3 w-3" />
+                                    Amazon
+                                    <ExternalLink className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      {filteredComponents.filter(c => c.category === cat.id).length === 0 && (
+                        <div className="col-span-2 text-center py-8 text-muted-foreground">
+                          No components available in this budget range. Try a different filter.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </TabsContent>
               ))}
