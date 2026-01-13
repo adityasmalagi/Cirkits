@@ -2,7 +2,7 @@ import { Layout } from '@/components/layout/Layout';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { LaptopCard } from '@/components/laptops/LaptopCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProjectCardSkeleton, LaptopCardSkeleton, PageLoadingSkeleton } from '@/components/ui/skeletons';
 import { Heart, Monitor, Laptop } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,7 +72,7 @@ export default function Favorites() {
     return (
       <Layout>
         <div className="container py-8">
-          <Skeleton className="h-96" />
+          <PageLoadingSkeleton />
         </div>
       </Layout>
     );
@@ -111,7 +111,7 @@ export default function Favorites() {
             {projectsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-80" />
+                  <ProjectCardSkeleton key={i} />
                 ))}
               </div>
             ) : favoriteProjects?.length === 0 ? (
@@ -141,7 +141,7 @@ export default function Favorites() {
             {laptopsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-80" />
+                  <LaptopCardSkeleton key={i} />
                 ))}
               </div>
             ) : favoriteLaptops?.length === 0 ? (

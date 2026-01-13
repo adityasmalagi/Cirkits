@@ -9,7 +9,7 @@ import { Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Laptop } from '@/types/database';
-import { Skeleton } from '@/components/ui/skeleton';
+import { LaptopCardSkeleton } from '@/components/ui/skeletons';
 
 export default function Laptops() {
   const [search, setSearch] = useState('');
@@ -76,7 +76,7 @@ export default function Laptops() {
           </div>
 
           <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {isLoading ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-80" />) : 
+            {isLoading ? Array.from({ length: 6 }).map((_, i) => <LaptopCardSkeleton key={i} />) : 
               filtered?.map(laptop => <LaptopCard key={laptop.id} laptop={laptop} />)}
           </div>
         </div>
