@@ -12,7 +12,7 @@ import { Search, Filter, X, IndianRupee, Zap, Gauge, Rocket, ArrowUpDown, ArrowU
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project, DifficultyLevel } from '@/types/database';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProjectCardSkeleton, ProjectListItemSkeleton } from '@/components/ui/skeletons';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -580,7 +580,7 @@ export default function Projects() {
           <div className="space-y-2">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-20" />
+                <ProjectListItemSkeleton key={i} />
               ))
             ) : filteredProjects?.length === 0 ? (
               <motion.div 
@@ -638,7 +638,7 @@ export default function Projects() {
           >
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-72 md:h-80" />
+                <ProjectCardSkeleton key={i} />
               ))
             ) : filteredProjects?.length === 0 ? (
               <motion.div 

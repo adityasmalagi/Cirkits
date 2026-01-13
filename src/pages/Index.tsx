@@ -9,7 +9,7 @@ import { ArrowRight, Sparkles, Cpu, Zap, ChevronRight, CircuitBoard, Wrench, Bot
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Project } from '@/types/database';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CategoryCardSkeleton, ProjectCardSkeleton } from '@/components/ui/skeletons';
 import { useIsMobile } from '@/hooks/use-mobile';
 const services = [
   {
@@ -247,7 +247,7 @@ export default function Index() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
             {categoriesLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-32 md:h-40" />
+                <CategoryCardSkeleton key={i} />
               ))
             ) : (
               categories?.map((category) => (
@@ -276,7 +276,7 @@ export default function Index() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {projectsLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-64 md:h-80" />
+              <ProjectCardSkeleton key={i} />
             ))
           ) : (
             featuredProjects?.map((project) => (
